@@ -26,6 +26,20 @@
 - 程序化音效与极简复古音频氛围
 - 从阶段 0 到阶段 4 的完整设计 / 技术 / 测试文档
 
+## 截图
+
+### 主菜单
+
+![Main Menu](docs/media/menu.png)
+
+### 战斗
+
+![Gameplay](docs/media/gameplay.png)
+
+### 结算
+
+![Result Screen](docs/media/result.png)
+
 ## 玩家流程
 
 启动项目后，当前完整体验流程如下：
@@ -90,6 +104,7 @@ tests/           预留测试目录
 - `08_playtest_report.md`：试玩与验证记录
 - `09_release_checklist.md`：发布检查表
 - `10_postmortem.md`：项目复盘
+- `11_release_notes_v1.0.0.md`：首个展示版发布文案
 
 ## 当前最接近原版的部分
 
@@ -119,3 +134,11 @@ tests/           预留测试目录
 首个适合展示与归档的完成版标签建议为：`v1.0.0`
 
 详细发布说明见 [`CHANGELOG.md`](CHANGELOG.md)。
+
+如果需要直接在 GitHub Release 中粘贴版本说明，可使用 [`docs/11_release_notes_v1.0.0.md`](docs/11_release_notes_v1.0.0.md)。
+
+## 许可证
+
+当前仓库暂未附带正式开源许可证。
+
+这是有法律含义的选择项，所以没有在未确认的前提下直接替你指定。如果你希望开放复用，我可以继续帮你补上明确的许可证文件，例如 `MIT`、`Apache-2.0` 或 `GPL-3.0`。
