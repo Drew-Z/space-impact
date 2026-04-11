@@ -109,6 +109,7 @@ tests/           预留测试目录
 - `13_release_notes_v1.0.1.md`：当前推荐正式 Release 文案
 - `14_distribution_guide.md`：导出与分发说明
 - `15_release_notes_v1.1.0.md`：Windows 构建验证后的发布文案
+- `16_final_summary.md`：项目正式完结总结
 
 ## 当前最接近原版的部分
 
