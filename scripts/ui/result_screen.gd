@@ -40,52 +40,53 @@ func _build_ui() -> void:
 	margin.add_child(content)
 
 	var headline := Label.new()
-	headline.text = "MISSION CLEAR" if result["victory"] else "MISSION FAILED"
+	headline.text = GameSession.loc("result_clear") if result["victory"] else GameSession.loc("result_failed")
 	headline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	headline.add_theme_font_size_override("font_size", 32)
 	headline.add_theme_color_override("font_color", GameSession.COLOR_ALERT if result["victory"] else GameSession.COLOR_HIT)
 	content.add_child(headline)
 
 	var score_label := Label.new()
-	score_label.text = "Score %06d" % int(result["score"])
+	score_label.text = GameSession.loc("result_score", [int(result["score"])])
 	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	score_label.add_theme_font_size_override("font_size", 20)
 	score_label.add_theme_color_override("font_color", GameSession.COLOR_FG)
 	content.add_child(score_label)
 
 	var detail_label := Label.new()
-	detail_label.text = "Time %.1fs   Weapon %s   Lives Left %d" % [
+	detail_label.text = GameSession.loc("result_detail", [
 		float(result["time"]),
 		GameSession.weapon_label(int(result["weapon_level"])),
 		int(result["lives_left"]),
-	]
+	])
 	detail_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	detail_label.add_theme_font_size_override("font_size", 16)
 	detail_label.add_theme_color_override("font_color", GameSession.COLOR_DIM)
 	content.add_child(detail_label)
 
 	var note := Label.new()
-	note.text = "Reached Sector %d   Cleared %d/2 sectors" % [
+	note.text = GameSession.loc("result_note", [
 		int(result["stage_reached"]),
 		int(result["stages_cleared"]),
-	]
+		int(result.get("total_stages", 6)),
+	])
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	note.add_theme_font_size_override("font_size", 16)
 	note.add_theme_color_override("font_color", GameSession.COLOR_FG)
 	content.add_child(note)
 
 	var best_label := Label.new()
-	best_label.text = "Best Score %06d%s" % [
+	best_label.text = GameSession.loc("result_best", [
 		int(result["best_score"]),
-		"   NEW RECORD" if result["new_record"] else "",
-	]
+		GameSession.loc("result_new_record") if result["new_record"] else "",
+	])
 	best_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	best_label.add_theme_font_size_override("font_size", 16)
 	best_label.add_theme_color_override("font_color", GameSession.COLOR_ALERT if result["new_record"] else GameSession.COLOR_DIM)
 	content.add_child(best_label)
 
 	_restart_button = Button.new()
-	_restart_button.text = "RUN AGAIN"
+	_restart_button.text = GameSession.loc("result_again")
 	_restart_button.focus_mode = Control.FOCUS_ALL
 	_restart_button.custom_minimum_size = Vector2(220.0, 44.0)
 	_restart_button.add_theme_stylebox_override("normal", _button_box(GameSession.COLOR_GRID))
@@ -98,7 +99,7 @@ func _build_ui() -> void:
 	content.add_child(_restart_button)
 
 	_menu_button = Button.new()
-	_menu_button.text = "RETURN TO MENU"
+	_menu_button.text = GameSession.loc("result_menu")
 	_menu_button.focus_mode = Control.FOCUS_ALL
 	_menu_button.custom_minimum_size = Vector2(220.0, 44.0)
 	_menu_button.add_theme_stylebox_override("normal", _button_box(GameSession.COLOR_GRID))

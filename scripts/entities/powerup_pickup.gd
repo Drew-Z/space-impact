@@ -14,6 +14,12 @@ func _ready() -> void:
 	add_to_group("powerup")
 	collision_layer = 16
 	collision_mask = 1
+	call_deferred("_install_collision_shape")
+
+
+func _install_collision_shape() -> void:
+	if get_child_count() > 0:
+		return
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = 12.0
@@ -42,6 +48,10 @@ func _draw() -> void:
 			draw_rect(Rect2(Vector2(-12.0, -12.0), Vector2(24.0, 24.0)), GameSession.COLOR_FG, true)
 			draw_line(Vector2(-6.0, 0.0), Vector2(6.0, 0.0), GameSession.COLOR_BG, 2.0)
 			draw_line(Vector2(0.0, -6.0), Vector2(0.0, 6.0), GameSession.COLOR_BG, 2.0)
+		"shield":
+			draw_circle(Vector2.ZERO, 13.0, GameSession.COLOR_GRID)
+			draw_arc(Vector2.ZERO, 13.0, 0.0, TAU, 28, GameSession.COLOR_ALERT, 2.0)
+			draw_circle(Vector2.ZERO, 6.0, GameSession.COLOR_FG)
 		"overdrive":
 			var overdrive_points := PackedVector2Array([
 				Vector2(-8.0, -14.0),

@@ -1,16 +1,17 @@
 # 技术设计
 
-## 引擎与范围
+## 引擎与当前实现
 
 - 引擎版本：Godot 4.6.1
-- 当前阶段：阶段 0，仅初始化项目与文档，不进入大规模玩法开发。
+- 当前状态：已完成主菜单、战斗、暂停、结算、分数持久化与五关 + 最终 Boss 的街机闭环
+- 当前目标：在不破坏已完成闭环的前提下，继续做小步扩展与稳定性优化
 
 ## 目录约定
 
 - `docs/`：项目文档
 - `scenes/`：Godot 场景
 - `scenes/entities/`：玩家、敌人、Boss、拾取物
-- `scenes/game/`：主关卡、战斗流程、关卡控制
+- `scenes/game/`：主关卡、战斗流程、反馈节点
 - `scenes/ui/`：HUD、菜单、暂停、结算
 - `scripts/`：GDScript 脚本
 - `scripts/entities/`：实体逻辑
@@ -20,66 +21,98 @@
 - `assets/`：美术、音频、字体
 - `tests/`：测试脚本或 smoke test
 
-## 预期场景结构
+## 当前场景结构
 
-阶段 1 开始后优先创建：
+- `scenes/ui/main_menu.tscn`：主菜单入口、最高分摘要、最近一局摘要
+- `scenes/game/game_root.tscn`：五关与最终 Boss 战斗主场景
+- `scenes/entities/player_ship.tscn`：玩家飞船
+- `scenes/entities/enemy_ship.tscn`：多类型普通敌人
+- `scenes/entities/boss_stage_1.tscn`：复用单场景、多 profile 的 Boss 实体
+- `scenes/entities/bullet.tscn`：敌我通用弹体
+- `scenes/entities/powerup_pickup.tscn`：局内拾取
+- `scenes/ui/result_screen.tscn`：通关 / 失败结算页
 
-- `scenes/ui/main_menu.tscn`
-- `scenes/game/game_root.tscn`
-- `scenes/entities/player_ship.tscn`
-- `scenes/entities/enemy_basic_*.tscn`
-- `scenes/entities/boss_stage_1.tscn`
-- `scenes/ui/result_screen.tscn`
+## 脚本职责
 
-## 预期脚本职责
-
-- 玩家控制：输入、移动、射击、受伤。
-- 敌人逻辑：移动轨迹、攻击、死亡。
-- 子弹逻辑：移动、碰撞、伤害。
-- 关卡流程：卷轴、波次、Boss 进入。
-- UI 逻辑：菜单、HUD、结算。
-- 全局状态：分数、生命、阶段结果。
+- 玩家控制：`scripts/entities/player_ship.gd`
+  负责移动、受伤、护盾、武器升级、掉级与发射请求
+- 敌人逻辑：`scripts/entities/enemy_ship.gd`
+  负责移动模式、攻击模式、受击与销毁
+- Boss 逻辑：`scripts/entities/boss_stage_1.gd`
+  通过 profile 区分 `striker / carrier / fortress / reaper / bastion / overlord`
+- 子弹逻辑：`scripts/entities/bullet.gd`
+  负责敌我子弹移动、碰撞、消费与差异化绘制
+- 关卡流程：`scripts/game/game_root.gd`
+  负责五关时间表、最终 Boss、支援敌机生成、暂停与结算跳转
+- UI 逻辑：`scripts/ui/*.gd`
+  负责菜单、HUD、暂停、结算与焦点流转
+- 全局状态：`scripts/autoload/game_session.gd`
+  负责配色常量、边界、输入、记录和本局结果
 
 ## 配置策略
 
-- 阶段 0 只建立最小 `project.godot`，避免过早固定主场景、autoload、输入映射。
-- 阶段 1 开始前再补 `run/main_scene` 和输入映射。
-- 只有在确有需要时才新增 autoload，并且必须记录用途。
-
-当前阶段 1 实际采用：
-
 - `run/main_scene` 指向 `scenes/ui/main_menu.tscn`
-- 新增 `GameSession` autoload
-- 用途：统一配置调色板、视口常量、运行时输入映射，以及在战斗与结算页之间传递本局结果
+- 使用 `GameSession` autoload 统一：
+  - 视口与活动边界常量
+  - 单色风格调色板
+  - 高分、总局数、最近一局结果
+  - 武器标签与 HUD 展示文案
+- 保持输入映射最小集合：
+  - `move_up`
+  - `move_down`
+  - `move_left`
+  - `move_right`
+  - `fire`
+  - `pause`
+  - `confirm`
+  - `back`
 
 ## 数据策略
 
-- 阶段 1 允许先把敌人和关卡参数写在脚本或资源里。
-- 阶段 2 再视复杂度决定是否抽到 `Resource` 配置或数据表。
+- 当前继续采用脚本内轻量配置，而不是过早拆成资源表
+- `game_root.gd` 维护五个 Sector 与最终 Boss 的：
+  - `schedule`
+  - `boss config`
+  - 节奏 helper，如 `burst` 与 `staggered_bursts`
+- `enemy_config()` 用统一入口管理敌机基础参数
+- Boss 使用单脚本 + 多 profile，而不是四套平行脚本，避免重复维护
 
-当前阶段 1 的关卡波次先写在 `scripts/game/game_root.gd` 的固定时间表内，属于刻意的最小实现。
+## 战斗技术策略
 
-阶段 2 继续沿用这一思路，但扩展为：
+- 主武器采用 13 级成长：
+  - 1-4 级为基础扩散成长
+  - 5-8 级为同模式加粗强化
+  - 9-13 级切换为从机身前沿贯穿到屏幕右侧的直线主炮并持续加粗
+- 掉落系统采用“击毁数保底 + 随机补偿 + 固定关卡节点”的混合方案
+- 玩家受伤时：
+  - 优先消耗护盾
+  - 无护盾时优先损失 1 级武器
+  - 只有武器回到基础等级后才开始损失船体
+- Boss 战期间会按 profile 配置生成小型支援敌机，用于维持战场节奏和掉落机会
+- 暂停通过 `PROCESS_MODE_PAUSABLE` 控制战斗对象冻结，HUD 和主流程维持必要的响应
 
-- 多 Sector 数据仍暂存在 `scripts/game/game_root.gd`
-- 每个 Sector 由 `schedule + boss config` 构成
-- 等阶段 2 复杂度稳定后，再决定是否在后续阶段抽离为 `Resource`
+## 运行时安全约束
 
-阶段 3 补充：
+- 物理回调内不直接做高风险状态切换
+- 新生成拾取物的碰撞形状采用 deferred 安装，避免在碰撞刷新期间改动物理状态
+- 玩家死亡后的 `defeated` 信号改为 deferred 发出，避免在物理回调内直接切场景
+- 继续保留轻量 `feedback_burst` 反馈，不引入复杂粒子系统，保证可读性与稳定性
 
-- `GameSession` 负责加载与保存最高分、总局数。
-- `HUD` 负责战斗 HUD、中心提示、底部提示、Boss 条与暂停面板。
-- 战斗反馈使用轻量 `feedback_burst`，不引入复杂粒子系统。
+## 音画与反馈策略
 
-阶段 4 / 发布后收口补充：
-
-- Boss 行为仍保持单脚本控制，但已加入低血量压迫提升，不引入复杂多阶段状态机。
-- 敌我弹体通过形状、亮度和轻量脉冲差异来强化可读性。
-- `feedback_burst` 扩展为 `ring / cross / spark / burst` 四种模式，用于击中、击破与 Boss 反馈。
-- 导出与分发流程当前先以文档化约束为主，见 `docs/14_distribution_guide.md`。
+- 敌我弹体通过尺寸、亮度、核心形状与拖尾差异进行区分
+- Boss、受击、拾取、护盾破裂使用不同的 HUD 提示与 burst 模式
+- 整体坚持 Nokia Space Impact 风格方向：
+  - 简洁
+  - 直接
+  - 单色 / 低分彩屏气质
+  - 短局高压
 
 ## 风险与约束
 
-- 最大风险是“像太空射击游戏，但不像原版 Space Impact”。
-- 第二风险是阶段 1 范围失控，导致最小可玩版本迟迟不能闭环。
-- 技术设计必须服务于“小步快跑、先闭环再扩展”。
+- 最大风险仍然是“可玩但不像初代 Space Impact”
+- 第二风险是继续扩关卡后节奏冗长，削弱短局街机感
+- 因此技术设计继续坚持：
+  - 先复用现有结构
+  - 先验证再扩展
+  - 不引入复杂成长系统

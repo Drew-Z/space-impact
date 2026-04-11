@@ -101,6 +101,8 @@ func _setup_sfx_players() -> void:
 			"target_freq": 440.0,
 			"amp": 0.1,
 			"wave": "square",
+			"lfo_depth": 0.0,
+			"lfo_rate": 0.0,
 		})
 
 
@@ -142,9 +144,24 @@ func _music_sample_for(note: Dictionary) -> float:
 	if freq <= 0.0 or amp <= 0.0:
 		return 0.0
 	_music_phase = wrapf(_music_phase + (freq / MIX_RATE), 0.0, 1.0)
-	var square := 1.0 if _music_phase < 0.5 else -1.0
-	var body := sin(_music_phase * TAU) * 0.4
-	return (square * 0.6 + body) * amp
+	var sine := sin(_music_phase * TAU)
+	var triangle := _triangle_wave(_music_phase)
+	var pulse := 1.0 if _music_phase < 0.42 else -1.0
+	match _music_mode:
+		"combat":
+			return (sine * 0.58 + triangle * 0.27 + pulse * 0.15) * amp
+		"pause":
+			return (sine * 0.72 + triangle * 0.28) * amp
+		"victory":
+			return (sine * 0.5 + triangle * 0.38 + pulse * 0.12) * amp
+		"defeat":
+			return (triangle * 0.56 + sine * 0.44) * amp
+		_:
+			return (sine * 0.74 + triangle * 0.26) * amp
+
+
+func _triangle_wave(phase: float) -> float:
+	return abs(phase * 4.0 - 2.0) - 1.0
 
 
 func _next_sfx_sample(state: Dictionary) -> float:
@@ -154,6 +171,10 @@ func _next_sfx_sample(state: Dictionary) -> float:
 	var start_freq: float = float(state["freq"])
 	var end_freq: float = float(state["target_freq"])
 	var freq: float = lerp(start_freq, end_freq, progress)
+	var lfo_depth: float = float(state.get("lfo_depth", 0.0))
+	var lfo_rate: float = float(state.get("lfo_rate", 0.0))
+	if lfo_depth > 0.0 and lfo_rate > 0.0:
+		freq += sin(elapsed * TAU * lfo_rate) * lfo_depth
 	var phase: float = float(state["phase"])
 	phase = wrapf(phase + (freq / MIX_RATE), 0.0, 1.0)
 	state["phase"] = phase
@@ -162,6 +183,8 @@ func _next_sfx_sample(state: Dictionary) -> float:
 		state["active"] = false
 	var env: float = (1.0 - progress) * float(state["amp"])
 	match String(state["wave"]):
+		"sine":
+			return sin(phase * TAU) * env
 		"triangle":
 			return (abs(phase * 4.0 - 2.0) - 1.0) * env
 		"noise":
@@ -178,64 +201,73 @@ func _music_sequence_for(mode: String) -> Array:
 	match mode:
 		"combat":
 			return [
-				{"freq": 220.0, "dur": 0.16, "amp": 0.05},
-				{"freq": 330.0, "dur": 0.12, "amp": 0.05},
-				{"freq": 262.0, "dur": 0.16, "amp": 0.05},
-				{"freq": 392.0, "dur": 0.18, "amp": 0.06},
-				{"freq": 294.0, "dur": 0.12, "amp": 0.05},
+				{"freq": 174.0, "dur": 0.18, "amp": 0.03},
+				{"freq": 220.0, "dur": 0.14, "amp": 0.034},
+				{"freq": 262.0, "dur": 0.14, "amp": 0.034},
+				{"freq": 220.0, "dur": 0.14, "amp": 0.03},
+				{"freq": 294.0, "dur": 0.18, "amp": 0.036},
+				{"freq": 247.0, "dur": 0.14, "amp": 0.032},
+				{"freq": 196.0, "dur": 0.16, "amp": 0.028},
 				{"freq": 0.0, "dur": 0.08, "amp": 0.0},
 			]
 		"pause":
 			return [
-				{"freq": 196.0, "dur": 0.22, "amp": 0.04},
-				{"freq": 147.0, "dur": 0.22, "amp": 0.04},
-				{"freq": 0.0, "dur": 0.14, "amp": 0.0},
+				{"freq": 174.0, "dur": 0.24, "amp": 0.028},
+				{"freq": 147.0, "dur": 0.24, "amp": 0.028},
+				{"freq": 130.0, "dur": 0.18, "amp": 0.022},
+				{"freq": 0.0, "dur": 0.16, "amp": 0.0},
 			]
 		"victory":
 			return [
-				{"freq": 262.0, "dur": 0.12, "amp": 0.06},
-				{"freq": 330.0, "dur": 0.12, "amp": 0.06},
-				{"freq": 392.0, "dur": 0.12, "amp": 0.07},
-				{"freq": 523.0, "dur": 0.22, "amp": 0.07},
-				{"freq": 392.0, "dur": 0.18, "amp": 0.05},
+				{"freq": 262.0, "dur": 0.14, "amp": 0.042},
+				{"freq": 330.0, "dur": 0.14, "amp": 0.042},
+				{"freq": 392.0, "dur": 0.14, "amp": 0.046},
+				{"freq": 523.0, "dur": 0.24, "amp": 0.048},
+				{"freq": 392.0, "dur": 0.18, "amp": 0.038},
+				{"freq": 330.0, "dur": 0.14, "amp": 0.034},
 				{"freq": 0.0, "dur": 0.12, "amp": 0.0},
 			]
 		"defeat":
 			return [
-				{"freq": 220.0, "dur": 0.18, "amp": 0.05},
-				{"freq": 196.0, "dur": 0.18, "amp": 0.05},
-				{"freq": 174.0, "dur": 0.18, "amp": 0.05},
-				{"freq": 147.0, "dur": 0.26, "amp": 0.05},
-				{"freq": 0.0, "dur": 0.1, "amp": 0.0},
+				{"freq": 220.0, "dur": 0.18, "amp": 0.03},
+				{"freq": 196.0, "dur": 0.18, "amp": 0.03},
+				{"freq": 174.0, "dur": 0.18, "amp": 0.03},
+				{"freq": 147.0, "dur": 0.28, "amp": 0.032},
+				{"freq": 0.0, "dur": 0.12, "amp": 0.0},
 			]
 		_:
 			return [
-				{"freq": 262.0, "dur": 0.16, "amp": 0.05},
-				{"freq": 330.0, "dur": 0.16, "amp": 0.05},
-				{"freq": 392.0, "dur": 0.2, "amp": 0.05},
-				{"freq": 330.0, "dur": 0.14, "amp": 0.04},
-				{"freq": 0.0, "dur": 0.14, "amp": 0.0},
+				{"freq": 196.0, "dur": 0.22, "amp": 0.024},
+				{"freq": 247.0, "dur": 0.2, "amp": 0.026},
+				{"freq": 294.0, "dur": 0.24, "amp": 0.028},
+				{"freq": 247.0, "dur": 0.18, "amp": 0.024},
+				{"freq": 220.0, "dur": 0.18, "amp": 0.022},
+				{"freq": 0.0, "dur": 0.16, "amp": 0.0},
 			]
 
 
 func _sfx_profile(name: String) -> Dictionary:
 	match name:
 		"shoot":
-			return {"duration": 0.05, "freq": 920.0, "target_freq": 760.0, "amp": 0.085, "wave": "square"}
+			return {"duration": 0.045, "freq": 640.0, "target_freq": 480.0, "amp": 0.052, "wave": "triangle"}
 		"hit":
-			return {"duration": 0.1, "freq": 220.0, "target_freq": 140.0, "amp": 0.1, "wave": "hybrid"}
+			return {"duration": 0.1, "freq": 220.0, "target_freq": 140.0, "amp": 0.065, "wave": "hybrid"}
 		"pickup":
 			return {"duration": 0.16, "freq": 420.0, "target_freq": 720.0, "amp": 0.11, "wave": "triangle"}
 		"repair":
 			return {"duration": 0.18, "freq": 300.0, "target_freq": 540.0, "amp": 0.1, "wave": "triangle"}
 		"overdrive":
-			return {"duration": 0.24, "freq": 340.0, "target_freq": 920.0, "amp": 0.13, "wave": "square"}
+			return {"duration": 0.2, "freq": 300.0, "target_freq": 620.0, "amp": 0.08, "wave": "triangle"}
 		"enemy_pop":
-			return {"duration": 0.09, "freq": 280.0, "target_freq": 90.0, "amp": 0.095, "wave": "hybrid"}
+			return {"duration": 0.09, "freq": 260.0, "target_freq": 150.0, "amp": 0.06, "wave": "hybrid"}
+		"beam":
+			return {"duration": 0.14, "freq": 118.0, "target_freq": 192.0, "amp": 0.05, "wave": "sine", "lfo_depth": 18.0, "lfo_rate": 6.0}
+		"boss_fire":
+			return {"duration": 0.11, "freq": 260.0, "target_freq": 200.0, "amp": 0.06, "wave": "triangle"}
 		"boss_alarm":
-			return {"duration": 0.22, "freq": 180.0, "target_freq": 280.0, "amp": 0.14, "wave": "square"}
+			return {"duration": 0.24, "freq": 540.0, "target_freq": 540.0, "amp": 0.11, "wave": "sine", "lfo_depth": 170.0, "lfo_rate": 4.4}
 		"boss_down":
-			return {"duration": 0.35, "freq": 260.0, "target_freq": 60.0, "amp": 0.18, "wave": "hybrid"}
+			return {"duration": 0.28, "freq": 220.0, "target_freq": 80.0, "amp": 0.1, "wave": "triangle"}
 		"pause":
 			return {"duration": 0.1, "freq": 300.0, "target_freq": 220.0, "amp": 0.08, "wave": "triangle"}
 		"resume":
@@ -245,5 +277,5 @@ func _sfx_profile(name: String) -> Dictionary:
 		"clear":
 			return {"duration": 0.22, "freq": 400.0, "target_freq": 700.0, "amp": 0.12, "wave": "triangle"}
 		"defeat":
-			return {"duration": 0.26, "freq": 180.0, "target_freq": 90.0, "amp": 0.12, "wave": "hybrid"}
+			return {"duration": 0.22, "freq": 160.0, "target_freq": 118.0, "amp": 0.065, "wave": "triangle"}
 	return {}

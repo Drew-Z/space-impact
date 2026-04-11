@@ -12,6 +12,10 @@ const PROFILE_PATH := "user://profile.cfg"
 
 var high_score := 0
 var total_runs := 0
+var language := "zh"
+var max_unlocked_phase := 1
+var pending_start_phase := 1
+var pending_start_weapon := 1
 
 var last_result := {
 	"victory": false,
@@ -21,8 +25,148 @@ var last_result := {
 	"lives_left": 0,
 	"stages_cleared": 0,
 	"stage_reached": 1,
+	"total_stages": 6,
 	"best_score": 0,
 	"new_record": false,
+}
+
+const TEXTS := {
+	"zh": {
+		"menu_subtitle": "致敬 Nokia 3310 Space Impact 初代体验",
+		"menu_summary": "五个战斗阶段与最终 Boss\n累积火力，撑过消耗，击碎核心。",
+		"menu_best": "最高分 %06d   局数 %d",
+		"menu_last_run": "上局：%s   分数 %06d   通关 %d/%d",
+		"menu_clear": "通关",
+		"menu_fail": "失败",
+		"menu_start": "开始游戏",
+		"menu_continue": "阶段继续",
+		"menu_continue_hint": "从当前最高已解锁阶段开始",
+		"menu_settings": "设置",
+		"menu_quit": "退出",
+		"menu_back": "返回",
+		"menu_no_continue": "尚无可继续进度",
+		"menu_controls": "移动：WASD / 方向键\n开火 / 确认：Space 或 Z\n暂停 / 返回：Esc 或 P",
+		"settings_title": "设置",
+		"settings_language": "语言",
+		"settings_hint": "按 Esc 返回菜单",
+		"lang_zh": "中文",
+		"lang_en": "English",
+		"hud_stats": "分数 %06d   船体 %d/%d   武器 %s",
+		"hud_mod": "状态 %s",
+		"hud_phase": "阶段 %d / %d   进度 %d%%",
+		"hud_boss": "BOSS %s",
+		"hud_pause": "暂停中",
+		"hud_pause_info": "当前 %06d   最高 %06d",
+		"hud_resume": "继续",
+		"hud_restart": "重新开始",
+		"hud_menu": "返回主菜单",
+		"hud_pause_help": "Esc / P 继续",
+		"hud_footer": "移动 WASD / 方向键   开火 Space / Z   暂停 Esc / P",
+		"result_clear": "任务完成",
+		"result_failed": "任务失败",
+		"result_score": "分数 %06d",
+		"result_detail": "时长 %.1fs   武器 %s   剩余船体 %d",
+		"result_note": "到达阶段 %d   完成 %d/%d",
+		"result_best": "最高分 %06d%s",
+		"result_new_record": "   新纪录",
+		"result_again": "再次出击",
+		"result_menu": "返回主菜单",
+		"phase_warning": "%s 警报",
+		"boss_warning_notice": "Boss 信号已锁定，保持阵型。",
+		"dangerous": "DANGEROUS",
+		"dangerous_sub": "危险目标接近",
+		"boss_frenzy": "BOSS 狂暴",
+		"boss_shift": "Boss 阵型切换",
+		"final_boss_shift": "核心相位偏移",
+		"final_boss_meltdown": "核心熔毁临界",
+		"final_core_destroyed": "最终核心已击破",
+		"final_escape": "敌方主核崩解，战区脱离中",
+		"phase_clear": "%s 已清除",
+		"feedback_hull": "船体受损",
+		"feedback_weapon_down": "武器降级",
+		"feedback_weapon_up": "武器升级",
+		"feedback_repair": "船体修复",
+		"feedback_shield": "护盾启动",
+		"feedback_shield_break": "护盾破裂",
+		"feedback_overdrive": "过载启动",
+		"feedback_paused": "游戏暂停",
+		"feedback_resume": "继续战斗",
+		"status_shield": "护盾",
+		"status_boost": "过载",
+		"run_intro": "穿过五个阶段，积累火力并击碎最终核心。",
+		"stage_opening": "%s 前段",
+		"stage_pressure": "%s 中段",
+		"stage_final_wave": "%s 最终波次",
+		"stage_boss": "%s Boss",
+	},
+	"en": {
+		"menu_subtitle": "A remake inspired by Nokia 3310 Space Impact",
+		"menu_summary": "Five combat phases and a final boss\nBuild firepower, survive attrition, and shatter the core.",
+		"menu_best": "BEST SCORE %06d   RUNS %d",
+		"menu_last_run": "Last Run: %s   Score %06d   Cleared %d/%d",
+		"menu_clear": "Clear",
+		"menu_fail": "Fail",
+		"menu_start": "Start Game",
+		"menu_continue": "Phase Resume",
+		"menu_continue_hint": "Start from the highest unlocked phase",
+		"menu_settings": "Settings",
+		"menu_quit": "Quit",
+		"menu_back": "Back",
+		"menu_no_continue": "No continue data available",
+		"menu_controls": "Move: WASD / Arrow Keys\nFire / Confirm: Space or Z\nPause / Back: Esc or P",
+		"settings_title": "Settings",
+		"settings_language": "Language",
+		"settings_hint": "Press Esc to return",
+		"lang_zh": "Chinese",
+		"lang_en": "English",
+		"hud_stats": "SCORE %06d   HULL %d/%d   WPN %s",
+		"hud_mod": "MOD %s",
+		"hud_phase": "PHASE %d / %d   PROGRESS %d%%",
+		"hud_boss": "BOSS %s",
+		"hud_pause": "PAUSED",
+		"hud_pause_info": "Current %06d   Best %06d",
+		"hud_resume": "Resume",
+		"hud_restart": "Restart Run",
+		"hud_menu": "Return To Menu",
+		"hud_pause_help": "Esc / P to resume",
+		"hud_footer": "Move WASD / Arrows   Fire Space / Z   Pause Esc / P",
+		"result_clear": "MISSION CLEAR",
+		"result_failed": "MISSION FAILED",
+		"result_score": "Score %06d",
+		"result_detail": "Time %.1fs   Weapon %s   Hull Left %d",
+		"result_note": "Reached Phase %d   Cleared %d/%d",
+		"result_best": "Best Score %06d%s",
+		"result_new_record": "   NEW RECORD",
+		"result_again": "Run Again",
+		"result_menu": "Return To Menu",
+		"phase_warning": "%s WARNING",
+		"boss_warning_notice": "Boss signature detected. Hold formation.",
+		"dangerous": "DANGEROUS",
+		"dangerous_sub": "Hostile target approaching",
+		"boss_frenzy": "BOSS FRENZY",
+		"boss_shift": "BOSS PATTERN SHIFT",
+		"final_boss_shift": "CORE PHASE SHIFT",
+		"final_boss_meltdown": "CORE MELTDOWN",
+		"final_core_destroyed": "FINAL CORE DESTROYED",
+		"final_escape": "Core collapse confirmed. Exiting combat zone.",
+		"phase_clear": "%s CLEAR",
+		"feedback_hull": "HULL DAMAGED",
+		"feedback_weapon_down": "WEAPON DOWN",
+		"feedback_weapon_up": "WEAPON UPGRADE",
+		"feedback_repair": "HULL REPAIRED",
+		"feedback_shield": "SHIELD ONLINE",
+		"feedback_shield_break": "SHIELD BROKEN",
+		"feedback_overdrive": "OVERDRIVE ENGAGED",
+		"feedback_paused": "RUN PAUSED",
+		"feedback_resume": "BACK IN ACTION",
+		"status_shield": "SHIELD",
+		"status_boost": "BOOST",
+		"run_intro": "Push through five phases, build your firepower, and break the final core.",
+		"stage_opening": "%s OPENING",
+		"stage_pressure": "%s PRESSURE",
+		"stage_final_wave": "%s FINAL WAVE",
+		"stage_boss": "%s BOSS",
+	},
 }
 
 
@@ -54,11 +198,12 @@ func _bind_action(action_name: String, keys: Array) -> void:
 		InputMap.action_add_event(action_name, input_event)
 
 
-func save_result(victory: bool, score: int, elapsed: float, weapon_level: int, lives_left: int, stages_cleared: int, stage_reached: int) -> void:
+func save_result(victory: bool, score: int, elapsed: float, weapon_level: int, lives_left: int, stages_cleared: int, stage_reached: int, total_stages: int) -> void:
 	total_runs += 1
 	var new_record := score > high_score
 	if new_record:
 		high_score = score
+	max_unlocked_phase = max(max_unlocked_phase, clamp(stage_reached, 1, total_stages))
 	_save_profile()
 	last_result = {
 		"victory": victory,
@@ -68,19 +213,73 @@ func save_result(victory: bool, score: int, elapsed: float, weapon_level: int, l
 		"lives_left": lives_left,
 		"stages_cleared": stages_cleared,
 		"stage_reached": stage_reached,
+		"total_stages": total_stages,
 		"best_score": high_score,
 		"new_record": new_record,
 	}
 
 
+func loc(key: String, args: Array = []) -> String:
+	var language_table: Dictionary = TEXTS.get(language, TEXTS["en"])
+	var template := String(language_table.get(key, key))
+	if args.is_empty():
+		return template
+	return template % args
+
+
+func set_language(new_language: String) -> void:
+	if not TEXTS.has(new_language):
+		return
+	language = new_language
+	_save_profile()
+
+
+func begin_new_run() -> void:
+	pending_start_phase = 1
+	pending_start_weapon = 1
+
+
+func begin_continue_run() -> void:
+	pending_start_phase = clamp(max_unlocked_phase, 1, int(last_result.get("total_stages", 6)))
+	pending_start_weapon = max(int(last_result.get("weapon_level", 1)), min(1 + (pending_start_phase - 1) * 2, 9))
+
+
+func consume_pending_start_phase() -> int:
+	return max(pending_start_phase, 1)
+
+
+func consume_pending_start_weapon() -> int:
+	return max(pending_start_weapon, 1)
+
+
 func weapon_label(level: int) -> String:
-	match clamp(level, 1, 3):
+	match clamp(level, 1, 13):
 		1:
 			return "PULSE"
 		2:
 			return "DOUBLE"
 		3:
-			return "SPREAD"
+			return "TRIPLE"
+		4:
+			return "EDGE"
+		5:
+			return "PULSE+"
+		6:
+			return "DOUBLE+"
+		7:
+			return "TRIPLE+"
+		8:
+			return "EDGE+"
+		9:
+			return "LINE"
+		10:
+			return "LINE+"
+		11:
+			return "LINE++"
+		12:
+			return "LINE MAX"
+		13:
+			return "OMEGA"
 	return "PULSE"
 
 
@@ -91,10 +290,14 @@ func _load_profile() -> void:
 		return
 	high_score = int(config.get_value("profile", "high_score", 0))
 	total_runs = int(config.get_value("profile", "total_runs", 0))
+	language = String(config.get_value("profile", "language", "zh"))
+	max_unlocked_phase = int(config.get_value("profile", "max_unlocked_phase", 1))
 
 
 func _save_profile() -> void:
 	var config := ConfigFile.new()
 	config.set_value("profile", "high_score", high_score)
 	config.set_value("profile", "total_runs", total_runs)
+	config.set_value("profile", "language", language)
+	config.set_value("profile", "max_unlocked_phase", max_unlocked_phase)
 	config.save(PROFILE_PATH)

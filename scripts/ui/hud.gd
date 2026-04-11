@@ -10,6 +10,8 @@ var _boss_label: Label
 var _stage_label: Label
 var _notice_label: Label
 var _center_label: Label
+var _danger_label: Label
+var _danger_sub_label: Label
 var _footer_label: Label
 var _progress_fill: ColorRect
 var _flash_rect: ColorRect
@@ -20,6 +22,7 @@ var _pause_resume_button: Button
 var _center_timer := 0.0
 var _notice_timer := 0.0
 var _flash_timer := 0.0
+var _danger_timer := 0.0
 
 
 func _ready() -> void:
@@ -41,6 +44,18 @@ func _process(delta: float) -> void:
 		_flash_rect.modulate.a = _flash_timer / 0.18
 		if _flash_timer == 0.0:
 			_flash_rect.visible = false
+	if _danger_timer > 0.0:
+		_danger_timer = max(_danger_timer - delta, 0.0)
+		var pulse_alpha: float = 0.26 + 0.24 * abs(sin(Time.get_ticks_msec() / 120.0))
+		_flash_rect.modulate.a = pulse_alpha
+		if _danger_label != null:
+			_danger_label.modulate.a = 0.66 + 0.34 * abs(sin(Time.get_ticks_msec() / 130.0))
+		if _danger_sub_label != null:
+			_danger_sub_label.modulate.a = 0.44 + 0.28 * abs(sin(Time.get_ticks_msec() / 140.0))
+		if _danger_timer == 0.0:
+			_flash_rect.visible = false
+			_danger_label.visible = false
+			_danger_sub_label.visible = false
 
 
 func _build_ui() -> void:
@@ -113,6 +128,26 @@ func _build_ui() -> void:
 	_center_label.add_theme_color_override("font_color", GameSession.COLOR_ALERT)
 	root.add_child(_center_label)
 
+	_danger_label = Label.new()
+	_danger_label.position = Vector2(80.0, 188.0)
+	_danger_label.size = Vector2(800.0, 72.0)
+	_danger_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_danger_label.visible = false
+	_danger_label.text = GameSession.loc("dangerous")
+	_danger_label.add_theme_font_size_override("font_size", 54)
+	_danger_label.add_theme_color_override("font_color", GameSession.COLOR_HIT)
+	root.add_child(_danger_label)
+
+	_danger_sub_label = Label.new()
+	_danger_sub_label.position = Vector2(200.0, 256.0)
+	_danger_sub_label.size = Vector2(560.0, 28.0)
+	_danger_sub_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_danger_sub_label.visible = false
+	_danger_sub_label.text = GameSession.loc("dangerous_sub")
+	_danger_sub_label.add_theme_font_size_override("font_size", 18)
+	_danger_sub_label.add_theme_color_override("font_color", GameSession.COLOR_ALERT)
+	root.add_child(_danger_sub_label)
+
 	_notice_label = Label.new()
 	_notice_label.position = Vector2(270.0, GameSession.VIEW_SIZE.y - 72.0)
 	_notice_label.size = Vector2(420.0, 22.0)
@@ -126,7 +161,7 @@ func _build_ui() -> void:
 	_footer_label.position = Vector2(16.0, GameSession.VIEW_SIZE.y - 31.0)
 	_footer_label.size = Vector2(920.0, 16.0)
 	_footer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_footer_label.text = "Move WASD / Arrows   Fire Space / Z   Pause Esc / P"
+	_footer_label.text = GameSession.loc("hud_footer")
 	_footer_label.add_theme_font_size_override("font_size", 13)
 	_footer_label.add_theme_color_override("font_color", GameSession.COLOR_DIM)
 	root.add_child(_footer_label)
@@ -157,7 +192,7 @@ func _build_ui() -> void:
 	pause_margin.add_child(pause_layout)
 
 	var pause_title := Label.new()
-	pause_title.text = "PAUSED"
+	pause_title.text = GameSession.loc("hud_pause")
 	pause_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pause_title.add_theme_font_size_override("font_size", 28)
 	pause_title.add_theme_color_override("font_color", GameSession.COLOR_ALERT)
@@ -170,20 +205,20 @@ func _build_ui() -> void:
 	_pause_info.add_theme_color_override("font_color", GameSession.COLOR_DIM)
 	pause_layout.add_child(_pause_info)
 
-	_pause_resume_button = _pause_button("RESUME")
+	_pause_resume_button = _pause_button(GameSession.loc("hud_resume"))
 	_pause_resume_button.pressed.connect(_on_resume_pressed)
 	pause_layout.add_child(_pause_resume_button)
 
-	var restart_button := _pause_button("RESTART RUN")
+	var restart_button := _pause_button(GameSession.loc("hud_restart"))
 	restart_button.pressed.connect(_on_restart_pressed)
 	pause_layout.add_child(restart_button)
 
-	var menu_button := _pause_button("RETURN TO MENU")
+	var menu_button := _pause_button(GameSession.loc("hud_menu"))
 	menu_button.pressed.connect(_on_menu_pressed)
 	pause_layout.add_child(menu_button)
 
 	var pause_help := Label.new()
-	pause_help.text = "Esc / P to resume"
+	pause_help.text = GameSession.loc("hud_pause_help")
 	pause_help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pause_help.add_theme_font_size_override("font_size", 13)
 	pause_help.add_theme_color_override("font_color", GameSession.COLOR_DIM)
@@ -191,26 +226,25 @@ func _build_ui() -> void:
 
 
 func update_player(score: int, hull: int, max_hull: int, lives: int, weapon_level: int, phase_text: String, status_text: String = "") -> void:
-	_stats_label.text = "SCORE %06d   HULL %d/%d   LIFE %d   WPN %s" % [
+	_stats_label.text = GameSession.loc("hud_stats", [
 		score,
 		hull,
 		max_hull,
-		lives,
 		GameSession.weapon_label(weapon_level),
-	]
+	])
 	if not status_text.is_empty():
-		_stats_label.text += "   MOD %s" % status_text
+		_stats_label.text += "   " + GameSession.loc("hud_mod", [status_text])
 	_phase_label.text = phase_text
 
 
 func update_stage(stage_index: int, total_stages: int, progress: float) -> void:
 	var clamped_progress: float = clamp(progress, 0.0, 1.0)
 	_progress_fill.size.x = 260.0 * clamped_progress
-	_stage_label.text = "SECTOR %d / %d   PROGRESS %d%%" % [
+	_stage_label.text = GameSession.loc("hud_phase", [
 		stage_index,
 		total_stages,
 		int(round(clamped_progress * 100.0)),
-	]
+	])
 
 
 func update_boss(active: bool, current_hull: int, max_hull: int) -> void:
@@ -221,7 +255,7 @@ func update_boss(active: bool, current_hull: int, max_hull: int) -> void:
 	var meter := ""
 	for index in range(14):
 		meter += "|" if index < filled else "."
-	_boss_label.text = "BOSS %s" % meter
+	_boss_label.text = GameSession.loc("hud_boss", [meter])
 
 
 func show_center_message(text: String, duration: float = 1.8, color: Color = GameSession.COLOR_ALERT) -> void:
@@ -239,14 +273,31 @@ func show_notice(text: String, duration: float = 1.2, color: Color = GameSession
 
 
 func flash(color: Color = GameSession.COLOR_HIT, alpha: float = 0.35) -> void:
+	_danger_timer = 0.0
+	if _danger_label != null:
+		_danger_label.visible = false
+	if _danger_sub_label != null:
+		_danger_sub_label.visible = false
 	_flash_rect.color = color
 	_flash_rect.modulate.a = alpha
 	_flash_rect.visible = true
 	_flash_timer = 0.24
 
 
+func show_danger_warning(duration: float = 1.2) -> void:
+	_flash_timer = 0.0
+	_flash_rect.color = Color(0.25, 0.02, 0.02, 0.86)
+	_flash_rect.modulate.a = 0.42
+	_flash_rect.visible = true
+	_danger_label.text = GameSession.loc("dangerous")
+	_danger_sub_label.text = GameSession.loc("dangerous_sub")
+	_danger_label.visible = true
+	_danger_sub_label.visible = true
+	_danger_timer = duration
+
+
 func show_pause(score: int, best_score: int) -> void:
-	_pause_info.text = "Current %06d   Best %06d" % [score, best_score]
+	_pause_info.text = GameSession.loc("hud_pause_info", [score, best_score])
 	_pause_panel.visible = true
 	if _pause_resume_button != null:
 		_pause_resume_button.grab_focus()

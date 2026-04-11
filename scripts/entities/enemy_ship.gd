@@ -14,6 +14,7 @@ var age := 0.0
 var score_value := 100
 var shoot_interval := 0.0
 var shoot_timer := 0.0
+var shot_mode := "single"
 var tint := GameSession.COLOR_DIM
 var vertical_speed := 0.0
 var drift_direction := 1.0
@@ -30,6 +31,7 @@ func setup(config: Dictionary) -> void:
 	base_y = config.get("base_y", global_position.y)
 	score_value = config.get("score_value", score_value)
 	shoot_interval = config.get("shoot_interval", shoot_interval)
+	shot_mode = String(config.get("shot_mode", shot_mode))
 	tint = config.get("tint", tint)
 	vertical_speed = config.get("vertical_speed", vertical_speed)
 	drift_direction = config.get("drift_direction", drift_direction)
@@ -64,19 +66,15 @@ func _process(delta: float) -> void:
 				drift_direction *= -1.0
 		"tank":
 			position.y = base_y + sin(age * frequency) * amplitude * 0.35
+		"spinner":
+			position.y = base_y + sin(age * frequency) * amplitude
+		"sentinel":
+			position.y = base_y + cos(age * frequency) * amplitude * 0.18
 	if shoot_interval > 0.0 and global_position.x < GameSession.VIEW_SIZE.x - 60.0:
 		shoot_timer -= delta
 		if shoot_timer <= 0.0:
 			shoot_timer += shoot_interval
-			var shot_direction := Vector2.LEFT
-			if enemy_type == "dart":
-				shot_direction = Vector2(-1.0, 0.25 * drift_direction)
-			fire_requested.emit([{
-				"position": global_position + Vector2(-18.0, 0.0),
-				"direction": shot_direction,
-				"speed": 300.0,
-				"damage": 1,
-			}])
+			fire_requested.emit(_build_shots())
 	if global_position.x < -40.0:
 		queue_free()
 	queue_redraw()
@@ -104,6 +102,54 @@ func collide_with_player() -> void:
 	if _dead:
 		return
 	_die(0)
+
+
+func apply_beam_damage(amount: int) -> void:
+	if _dead:
+		return
+	_apply_damage(amount)
+
+
+func _build_shots() -> Array:
+	match shot_mode:
+		"aimed":
+			return [_enemy_shot(_aim_at_player(), 328.0)]
+		"spread":
+			return [
+				_enemy_shot(Vector2(-1.0, -0.2), 310.0),
+				_enemy_shot(Vector2.LEFT, 326.0),
+				_enemy_shot(Vector2(-1.0, 0.2), 310.0),
+			]
+		"cross":
+			return [
+				_enemy_shot(Vector2(-1.0, -0.26), 320.0),
+				_enemy_shot(Vector2(-1.0, -0.08), 336.0),
+				_enemy_shot(Vector2(-1.0, 0.08), 336.0),
+				_enemy_shot(Vector2(-1.0, 0.26), 320.0),
+			]
+		"dart":
+			return [_enemy_shot(Vector2(-1.0, 0.25 * drift_direction), 312.0)]
+		_:
+			return [_enemy_shot(Vector2.LEFT, 300.0)]
+
+
+func _enemy_shot(shot_direction: Vector2, shot_speed: float) -> Dictionary:
+	return {
+		"position": global_position + Vector2(-18.0, 0.0),
+		"direction": shot_direction,
+		"speed": shot_speed,
+		"damage": 1,
+	}
+
+
+func _aim_at_player() -> Vector2:
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player == null:
+		return Vector2.LEFT
+	var direction := (player.global_position - global_position).normalized()
+	if direction.x > -0.5:
+		direction = Vector2(-0.5, direction.y).normalized()
+	return direction
 
 
 func _die(points: int) -> void:
@@ -138,6 +184,24 @@ func _draw() -> void:
 		"tank":
 			draw_rect(Rect2(Vector2(-14.0, -10.0), Vector2(28.0, 20.0)), draw_tint, true)
 			draw_rect(Rect2(Vector2(-20.0, -4.0), Vector2(8.0, 8.0)), draw_tint, true)
+		"spinner":
+			var spinner_points := PackedVector2Array([
+				Vector2(0.0, -12.0),
+				Vector2(6.0, -4.0),
+				Vector2(14.0, 0.0),
+				Vector2(6.0, 4.0),
+				Vector2(0.0, 12.0),
+				Vector2(-6.0, 4.0),
+				Vector2(-14.0, 0.0),
+				Vector2(-6.0, -4.0),
+			])
+			draw_polygon(spinner_points, PackedColorArray([draw_tint, draw_tint, draw_tint, draw_tint, draw_tint, draw_tint, draw_tint, draw_tint]))
+			draw_circle(Vector2.ZERO, 3.0, GameSession.COLOR_BG)
+		"sentinel":
+			draw_rect(Rect2(Vector2(-15.0, -12.0), Vector2(30.0, 24.0)), draw_tint, true)
+			draw_rect(Rect2(Vector2(-20.0, -4.0), Vector2(10.0, 8.0)), draw_tint, true)
+			draw_rect(Rect2(Vector2(-2.0, -4.0), Vector2(10.0, 8.0)), GameSession.COLOR_BG, true)
+			draw_rect(Rect2(Vector2(8.0, -2.0), Vector2(4.0, 4.0)), GameSession.COLOR_HIT, true)
 		_:
 			var body := PackedVector2Array([
 				Vector2(12.0, -7.0),
