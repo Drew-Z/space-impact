@@ -2,6 +2,7 @@ extends Area2D
 
 signal destroyed(score_value: int, burst_position: Vector2)
 signal fire_requested(shots: Array)
+signal damaged(hit_position: Vector2, enemy_type: String, remaining_hull: int)
 
 var enemy_type := "straight"
 var speed := 220.0
@@ -93,6 +94,8 @@ func _on_area_entered(area: Area2D) -> void:
 func _apply_damage(amount: int) -> void:
 	health -= amount
 	_hit_flash_time = 0.08
+	if health > 0:
+		damaged.emit(global_position, enemy_type, health)
 	if health <= 0:
 		_die(score_value)
 

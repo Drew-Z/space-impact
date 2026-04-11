@@ -38,6 +38,9 @@
 - [x] `docs/08_playtest_report.md`
 - [x] `docs/09_release_checklist.md`
 - [x] `docs/10_postmortem.md`
+- [x] `docs/12_final_playtest_runbook.md`
+- [x] `docs/13_release_notes_v1.0.1.md`
+- [x] `docs/14_distribution_guide.md`
 
 ## 发布前建议
 
@@ -45,4 +48,4 @@
 - [ ] 记录一次最高分持久化验证结果
 - [ ] 记录一次暂停菜单全流程验证结果
 - [ ] 根据试玩结果做最后的小幅平衡修正
-
+- [ ] 脱离编辑器运行一次导出后的 Windows 构建

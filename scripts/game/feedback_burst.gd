@@ -32,5 +32,13 @@ func _draw() -> void:
 	if mode == "cross":
 		draw_line(Vector2(-current_radius, 0.0), Vector2(current_radius, 0.0), draw_color, ring_width)
 		draw_line(Vector2(0.0, -current_radius), Vector2(0.0, current_radius), draw_color, ring_width)
+	elif mode == "spark":
+		for angle in [0.0, TAU * 0.125, TAU * 0.25, TAU * 0.375]:
+			var direction := Vector2.RIGHT.rotated(angle)
+			draw_line(direction * current_radius * 0.25, direction * current_radius, draw_color, ring_width * 0.8)
+	elif mode == "burst":
+		for angle in [0.0, TAU * 0.1, TAU * 0.22, TAU * 0.34, TAU * 0.5, TAU * 0.66]:
+			var direction := Vector2.RIGHT.rotated(angle)
+			draw_line(direction * current_radius * 0.18, direction * current_radius, draw_color, ring_width)
 	else:
 		draw_arc(Vector2.ZERO, current_radius, 0.0, TAU, 24, draw_color, ring_width)

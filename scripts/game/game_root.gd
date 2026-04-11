@@ -39,6 +39,7 @@ var _shot_sfx_timer := 0.0
 var _kills_since_weapon_drop := 0
 var _random_drop_cooldown := 0.0
 var _boss_warning_active := false
+var _boss_frenzy_announced := false
 
 
 func _ready() -> void:
@@ -130,14 +131,15 @@ func _build_stages() -> Array:
 			"name": "SECTOR 1",
 			"schedule": [
 				{"time": 1.0, "kind": "burst", "enemy_type": "straight", "lanes": [110.0, 188.0, 266.0, 344.0]},
-				{"time": 4.4, "kind": "burst", "enemy_type": "wave", "lanes": [138.0, 218.0, 298.0, 378.0], "x_spacing": 62.0},
-				{"time": 8.2, "kind": "burst", "enemy_type": "straight", "lanes": [390.0, 330.0, 270.0, 210.0, 150.0], "x_spacing": 58.0},
-				{"time": 12.6, "kind": "burst", "enemy_type": "dart", "lanes": [116.0, 392.0], "overrides": {"shoot_interval": 1.9}},
-				{"time": 18.4, "kind": "burst", "enemy_type": "tank", "lanes": [166.0, 336.0], "x_spacing": 96.0, "overrides": {"health": 4}},
-				{"time": 23.8, "kind": "burst", "enemy_type": "wave", "lanes": [118.0, 192.0, 266.0, 340.0, 414.0], "x_spacing": 52.0},
-				{"time": 28.2, "kind": "powerup", "kind_name": "repair", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 180.0)},
-				{"time": 30.5, "kind": "burst", "enemy_type": "dart", "lanes": [120.0, 200.0, 340.0, 420.0], "x_spacing": 74.0},
-				{"time": 35.5, "kind": "boss"},
+				{"time": 4.8, "kind": "burst", "enemy_type": "wave", "lanes": [136.0, 220.0, 304.0, 388.0], "x_spacing": 66.0},
+				{"time": 8.9, "kind": "burst", "enemy_type": "straight", "lanes": [388.0, 326.0, 264.0, 202.0, 140.0], "x_spacing": 60.0},
+				{"time": 12.9, "kind": "burst", "enemy_type": "dart", "lanes": [118.0, 392.0], "overrides": {"shoot_interval": 1.95}},
+				{"time": 17.8, "kind": "burst", "enemy_type": "tank", "lanes": [170.0, 336.0], "x_spacing": 94.0, "overrides": {"health": 4}},
+				{"time": 22.9, "kind": "burst", "enemy_type": "wave", "lanes": [118.0, 190.0, 262.0, 334.0, 406.0], "x_spacing": 54.0},
+				{"time": 27.1, "kind": "powerup", "kind_name": "repair", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 180.0)},
+				{"time": 29.9, "kind": "burst", "enemy_type": "dart", "lanes": [126.0, 208.0, 332.0, 414.0], "x_spacing": 76.0},
+				{"time": 34.5, "kind": "burst", "enemy_type": "wave", "lanes": [150.0, 270.0, 390.0], "x_spacing": 86.0, "overrides": {"health": 3}},
+				{"time": 39.8, "kind": "boss"},
 			],
 			"boss": {
 				"profile": "striker",
@@ -145,22 +147,24 @@ func _build_stages() -> Array:
 				"move_amplitude": 110.0,
 				"move_speed": 1.6,
 				"fire_cooldown": 1.05,
+				"enrage_ratio": 0.34,
 				"score_value": 2200,
 			},
 		},
 		{
 			"name": "SECTOR 2",
 			"schedule": [
-				{"time": 1.2, "kind": "burst", "enemy_type": "straight", "lanes": [102.0, 162.0, 222.0, 318.0, 378.0, 438.0], "x_spacing": 48.0},
-				{"time": 4.4, "kind": "burst", "enemy_type": "dart", "lanes": [126.0, 248.0, 370.0], "x_spacing": 88.0, "overrides": {"shoot_interval": 1.65}},
+				{"time": 1.2, "kind": "burst", "enemy_type": "straight", "lanes": [102.0, 162.0, 222.0, 318.0, 378.0, 438.0], "x_spacing": 50.0},
+				{"time": 4.8, "kind": "burst", "enemy_type": "dart", "lanes": [126.0, 248.0, 370.0], "x_spacing": 88.0, "overrides": {"shoot_interval": 1.62}},
 				{"time": 8.5, "kind": "powerup", "kind_name": "overdrive", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 300.0)},
-				{"time": 10.0, "kind": "burst", "enemy_type": "wave", "lanes": [124.0, 184.0, 244.0, 304.0, 364.0, 424.0], "x_spacing": 46.0, "overrides": {"speed": 236.0}},
-				{"time": 15.2, "kind": "burst", "enemy_type": "tank", "lanes": [142.0, 270.0, 398.0], "x_spacing": 78.0, "overrides": {"shoot_interval": 1.5, "health": 5}},
-				{"time": 22.4, "kind": "burst", "enemy_type": "dart", "lanes": [114.0, 174.0, 366.0, 426.0], "x_spacing": 60.0, "overrides": {"shoot_interval": 1.35}},
-				{"time": 27.8, "kind": "burst", "enemy_type": "wave", "lanes": [132.0, 208.0, 284.0, 360.0], "x_spacing": 54.0, "overrides": {"health": 3}},
-				{"time": 31.2, "kind": "powerup", "kind_name": "repair", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 380.0)},
-				{"time": 34.6, "kind": "burst", "enemy_type": "tank", "lanes": [120.0, 220.0, 320.0, 420.0], "x_spacing": 64.0, "overrides": {"health": 5, "shoot_interval": 1.35}},
-				{"time": 41.0, "kind": "boss"},
+				{"time": 10.3, "kind": "burst", "enemy_type": "wave", "lanes": [124.0, 184.0, 244.0, 304.0, 364.0, 424.0], "x_spacing": 46.0, "overrides": {"speed": 238.0}},
+				{"time": 15.8, "kind": "burst", "enemy_type": "tank", "lanes": [142.0, 270.0, 398.0], "x_spacing": 82.0, "overrides": {"shoot_interval": 1.45, "health": 5}},
+				{"time": 21.0, "kind": "burst", "enemy_type": "wave", "lanes": [152.0, 248.0, 344.0], "x_spacing": 88.0, "overrides": {"health": 3, "speed": 228.0}},
+				{"time": 24.0, "kind": "burst", "enemy_type": "dart", "lanes": [114.0, 174.0, 366.0, 426.0], "x_spacing": 62.0, "overrides": {"shoot_interval": 1.3}},
+				{"time": 29.6, "kind": "burst", "enemy_type": "wave", "lanes": [132.0, 208.0, 284.0, 360.0], "x_spacing": 56.0, "overrides": {"health": 3}},
+				{"time": 33.3, "kind": "powerup", "kind_name": "repair", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 380.0)},
+				{"time": 36.4, "kind": "burst", "enemy_type": "tank", "lanes": [120.0, 220.0, 320.0, 420.0], "x_spacing": 66.0, "overrides": {"health": 5, "shoot_interval": 1.28}},
+				{"time": 43.8, "kind": "boss"},
 			],
 			"boss": {
 				"profile": "carrier",
@@ -169,6 +173,8 @@ func _build_stages() -> Array:
 				"move_speed": 1.1,
 				"entry_speed": 100.0,
 				"fire_cooldown": 0.94,
+				"enrage_ratio": 0.38,
+				"enrage_fire_multiplier": 0.7,
 				"score_value": 3600,
 				"target_x": 748.0,
 			},
@@ -187,6 +193,7 @@ func _load_stage(index: int) -> void:
 	_boss_max_hull = 0
 	_boss = null
 	_boss_warning_active = false
+	_boss_frenzy_announced = false
 	var stage: Dictionary = _stages[index]
 	_stage_name = String(stage["name"])
 	_spawn_schedule = stage["schedule"]
@@ -211,6 +218,7 @@ func _spawn_burst(event: Dictionary) -> void:
 		enemy.position = spawn_position
 		enemy.setup(_enemy_config(String(event["enemy_type"]), spawn_position.y, event.get("overrides", {})))
 		enemy.destroyed.connect(_on_enemy_destroyed)
+		enemy.damaged.connect(_on_enemy_damaged)
 		enemy.fire_requested.connect(_spawn_enemy_shots)
 		add_child(enemy)
 
@@ -286,6 +294,7 @@ func _spawn_boss() -> void:
 	_boss.destroyed.connect(_on_boss_destroyed)
 	_boss.fire_requested.connect(_spawn_enemy_shots)
 	_boss.hull_changed.connect(_on_boss_hull_changed)
+	_boss.damaged.connect(_on_boss_damaged)
 	add_child(_boss)
 	_hud.show_center_message("%s BOSS" % _stage_name, 1.4)
 	_hud.flash(GameSession.COLOR_ALERT, 0.18)
@@ -324,13 +333,32 @@ func _on_enemy_destroyed(score_value: int, burst_position: Vector2) -> void:
 	_score += score_value
 	_kills_since_weapon_drop += 1
 	_maybe_spawn_powerup_drop(burst_position)
-	_spawn_burst_effect(burst_position, GameSession.COLOR_FG, 18.0)
+	_spawn_burst_effect(burst_position, GameSession.COLOR_FG, 18.0, "burst")
 	AudioDirector.play_sfx("enemy_pop")
+
+
+func _on_enemy_damaged(hit_position: Vector2, enemy_type: String, remaining_hull: int) -> void:
+	var radius := 10.0 if enemy_type != "tank" else 14.0
+	var color := GameSession.COLOR_HIT if remaining_hull <= 1 else GameSession.COLOR_ALERT
+	_spawn_burst_effect(hit_position, color, radius, "spark")
 
 
 func _on_boss_hull_changed(current_hull: int, max_hull: int) -> void:
 	_boss_hull = current_hull
 	_boss_max_hull = max_hull
+
+
+func _on_boss_damaged(hit_position: Vector2, current_hull: int, max_hull: int) -> void:
+	_spawn_burst_effect(hit_position, GameSession.COLOR_ALERT, 20.0, "spark")
+	if _boss_frenzy_announced:
+		return
+	if max_hull <= 0:
+		return
+	if float(current_hull) / float(max_hull) > 0.38:
+		return
+	_boss_frenzy_announced = true
+	_hud.show_notice("BOSS FRENZY", 1.3, GameSession.COLOR_ALERT)
+	_hud.flash(GameSession.COLOR_ALERT, 0.22)
 
 
 func _on_boss_destroyed(score_value: int, burst_position: Vector2) -> void:
@@ -415,9 +443,9 @@ func _maybe_spawn_powerup_drop(at_position: Vector2) -> void:
 
 func _roll_random_drop_kind() -> String:
 	var roll := randf()
-	if _player_weapon < 3 and roll < 0.16:
+	if _player_weapon < 3 and roll < 0.2:
 		return "weapon"
-	if roll < 0.74:
+	if roll < 0.72:
 		return "repair"
 	return "overdrive"
 

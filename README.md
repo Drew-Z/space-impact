@@ -107,6 +107,7 @@ tests/           预留测试目录
 - `11_release_notes_v1.0.0.md`：首个展示版发布文案
 - `12_final_playtest_runbook.md`：最终人工试玩执行手册
 - `13_release_notes_v1.0.1.md`：当前推荐正式 Release 文案
+- `14_distribution_guide.md`：导出与分发说明
 
 ## 当前最接近原版的部分
 
