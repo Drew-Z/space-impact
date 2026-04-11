@@ -1,5 +1,10 @@
 ; Engine configuration file.
-; Stage 0 keeps the project intentionally minimal and documentation-first.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -8,6 +13,7 @@ config_version=5
 config/name="Space War"
 config/description="Godot 4.6.1 remake project targeting the original Nokia 3310 Space Impact experience."
 run/main_scene="res://scenes/ui/main_menu.tscn"
+config/features=PackedStringArray("4.6")
 
 [autoload]
 

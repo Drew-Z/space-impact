@@ -108,6 +108,7 @@ tests/           预留测试目录
 - `12_final_playtest_runbook.md`：最终人工试玩执行手册
 - `13_release_notes_v1.0.1.md`：当前推荐正式 Release 文案
 - `14_distribution_guide.md`：导出与分发说明
+- `15_release_notes_v1.1.0.md`：Windows 构建验证后的发布文案
 
 ## 当前最接近原版的部分
 
@@ -134,11 +135,11 @@ tests/           预留测试目录
 
 ## 版本
 
-当前推荐用于正式发布的标签为：`v1.0.1`
+当前推荐用于正式发布的标签为：`v1.1.0`
 
 详细发布说明见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-如果需要直接在 GitHub Release 中粘贴版本说明，推荐使用 [`docs/13_release_notes_v1.0.1.md`](docs/13_release_notes_v1.0.1.md)。
+如果需要直接在 GitHub Release 中粘贴版本说明，推荐使用 [`docs/15_release_notes_v1.1.0.md`](docs/15_release_notes_v1.1.0.md)。
 
 ## 许可证
 

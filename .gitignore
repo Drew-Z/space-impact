@@ -1,3 +1,6 @@
 .godot/
 .godot-user*/
 godot-*.log
+build/
+docs/media/*.import
+*.import*.tmp
