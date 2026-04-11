@@ -1,0 +1,26 @@
+; Engine configuration file.
+; Stage 0 keeps the project intentionally minimal and documentation-first.
+
+config_version=5
+
+[application]
+
+config/name="Space War"
+config/description="Godot 4.6.1 remake project targeting the original Nokia 3310 Space Impact experience."
+run/main_scene="res://scenes/ui/main_menu.tscn"
+
+[autoload]
+
+GameSession="*res://scripts/autoload/game_session.gd"
+AudioDirector="*res://scripts/autoload/audio_director.gd"
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=540
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0

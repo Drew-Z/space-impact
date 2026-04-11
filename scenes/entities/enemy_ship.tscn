@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_ship.gd" id="1_l6d2r"]
+
+[node name="EnemyShip" type="Area2D"]
+script = ExtResource("1_l6d2r")
+
