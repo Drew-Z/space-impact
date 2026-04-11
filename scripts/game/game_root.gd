@@ -36,19 +36,25 @@ var _stages_cleared := 0
 var _stage_name := "SECTOR 1"
 var _is_paused := false
 var _shot_sfx_timer := 0.0
+var _kills_since_weapon_drop := 0
+var _random_drop_cooldown := 0.0
+var _boss_warning_active := false
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	AudioDirector.set_music_mode("combat")
 	_stages = _build_stages()
-	add_child(STARFIELD_SCENE.instantiate())
+	var starfield := STARFIELD_SCENE.instantiate()
+	_mark_gameplay_node(starfield)
+	add_child(starfield)
 	_hud = HUD_SCENE.instantiate()
 	_hud.resume_requested.connect(_resume_run)
 	_hud.restart_requested.connect(_restart_run)
 	_hud.menu_requested.connect(_return_to_menu)
 	add_child(_hud)
 	_player = PLAYER_SCENE.instantiate()
+	_mark_gameplay_node(_player)
 	_player.position = Vector2(120.0, GameSession.VIEW_SIZE.y * 0.5)
 	_player.shoot_requested.connect(_spawn_player_shots)
 	_player.state_changed.connect(_on_player_state_changed)
@@ -67,6 +73,7 @@ func _process(delta: float) -> void:
 		_sync_hud()
 		return
 	_shot_sfx_timer = max(_shot_sfx_timer - delta, 0.0)
+	_random_drop_cooldown = max(_random_drop_cooldown - delta, 0.0)
 	_elapsed += delta
 
 	if _stage_transition_timer > 0.0:
@@ -112,6 +119,8 @@ func _process_schedule() -> void:
 				_spawn_powerup(event)
 			"boss":
 				_boss_pending = true
+				if not _boss_warning_active:
+					_trigger_boss_warning()
 		_spawn_index += 1
 
 
@@ -124,7 +133,6 @@ func _build_stages() -> Array:
 				{"time": 4.4, "kind": "burst", "enemy_type": "wave", "lanes": [138.0, 218.0, 298.0, 378.0], "x_spacing": 62.0},
 				{"time": 8.2, "kind": "burst", "enemy_type": "straight", "lanes": [390.0, 330.0, 270.0, 210.0, 150.0], "x_spacing": 58.0},
 				{"time": 12.6, "kind": "burst", "enemy_type": "dart", "lanes": [116.0, 392.0], "overrides": {"shoot_interval": 1.9}},
-				{"time": 16.0, "kind": "powerup", "kind_name": "weapon", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 250.0)},
 				{"time": 18.4, "kind": "burst", "enemy_type": "tank", "lanes": [166.0, 336.0], "x_spacing": 96.0, "overrides": {"health": 4}},
 				{"time": 23.8, "kind": "burst", "enemy_type": "wave", "lanes": [118.0, 192.0, 266.0, 340.0, 414.0], "x_spacing": 52.0},
 				{"time": 28.2, "kind": "powerup", "kind_name": "repair", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 180.0)},
@@ -148,7 +156,6 @@ func _build_stages() -> Array:
 				{"time": 8.5, "kind": "powerup", "kind_name": "overdrive", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 300.0)},
 				{"time": 10.0, "kind": "burst", "enemy_type": "wave", "lanes": [124.0, 184.0, 244.0, 304.0, 364.0, 424.0], "x_spacing": 46.0, "overrides": {"speed": 236.0}},
 				{"time": 15.2, "kind": "burst", "enemy_type": "tank", "lanes": [142.0, 270.0, 398.0], "x_spacing": 78.0, "overrides": {"shoot_interval": 1.5, "health": 5}},
-				{"time": 20.0, "kind": "powerup", "kind_name": "weapon", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 210.0)},
 				{"time": 22.4, "kind": "burst", "enemy_type": "dart", "lanes": [114.0, 174.0, 366.0, 426.0], "x_spacing": 60.0, "overrides": {"shoot_interval": 1.35}},
 				{"time": 27.8, "kind": "burst", "enemy_type": "wave", "lanes": [132.0, 208.0, 284.0, 360.0], "x_spacing": 54.0, "overrides": {"health": 3}},
 				{"time": 31.2, "kind": "powerup", "kind_name": "repair", "position": Vector2(GameSession.VIEW_SIZE.x + 30.0, 380.0)},
@@ -179,6 +186,7 @@ func _load_stage(index: int) -> void:
 	_boss_hull = 0
 	_boss_max_hull = 0
 	_boss = null
+	_boss_warning_active = false
 	var stage: Dictionary = _stages[index]
 	_stage_name = String(stage["name"])
 	_spawn_schedule = stage["schedule"]
@@ -195,6 +203,7 @@ func _spawn_burst(event: Dictionary) -> void:
 			lanes.append(float(event.get("start_y", 120.0)) + float(row) * float(event.get("spacing", 70.0)))
 	for index in range(lanes.size()):
 		var enemy := ENEMY_SCENE.instantiate()
+		_mark_gameplay_node(enemy)
 		var spawn_position := Vector2(
 			GameSession.VIEW_SIZE.x + 70.0 + float(index) * x_spacing,
 			clamp(float(lanes[index]), 86.0, GameSession.VIEW_SIZE.y - 86.0)
@@ -261,6 +270,7 @@ func _enemy_config(enemy_type: String, base_y: float, overrides: Dictionary = {}
 
 func _spawn_powerup(event: Dictionary) -> void:
 	var pickup := POWERUP_SCENE.instantiate()
+	_mark_gameplay_node(pickup)
 	pickup.position = event.get("position", Vector2(GameSession.VIEW_SIZE.x + 30.0, GameSession.VIEW_SIZE.y * 0.5))
 	pickup.setup({
 		"kind": String(event.get("kind_name", "weapon")),
@@ -270,6 +280,7 @@ func _spawn_powerup(event: Dictionary) -> void:
 
 func _spawn_boss() -> void:
 	_boss = BOSS_SCENE.instantiate()
+	_mark_gameplay_node(_boss)
 	_boss.setup(_boss_config)
 	_boss.position = Vector2(GameSession.VIEW_SIZE.x + 80.0, GameSession.VIEW_SIZE.y * 0.5)
 	_boss.destroyed.connect(_on_boss_destroyed)
@@ -279,21 +290,24 @@ func _spawn_boss() -> void:
 	_hud.show_center_message("%s BOSS" % _stage_name, 1.4)
 	_hud.flash(GameSession.COLOR_ALERT, 0.18)
 	AudioDirector.play_sfx("boss_alarm")
+	_boss_warning_active = false
 
 
 func _spawn_player_shots(shots: Array) -> void:
 	for shot in shots:
 		var bullet := BULLET_SCENE.instantiate()
+		_mark_gameplay_node(bullet)
 		bullet.setup(shot["position"], shot["direction"], float(shot["speed"]), int(shot["damage"]), true)
 		add_child(bullet)
 	if _shot_sfx_timer <= 0.0:
-		_shot_sfx_timer = 0.08
+		_shot_sfx_timer = 0.11
 		AudioDirector.play_sfx("shoot")
 
 
 func _spawn_enemy_shots(shots: Array) -> void:
 	for shot in shots:
 		var bullet := BULLET_SCENE.instantiate()
+		_mark_gameplay_node(bullet)
 		bullet.setup(shot["position"], shot["direction"], float(shot["speed"]), int(shot["damage"]), false)
 		add_child(bullet)
 
@@ -308,6 +322,8 @@ func _on_player_state_changed(hull: int, max_hull: int, lives: int, weapon_level
 
 func _on_enemy_destroyed(score_value: int, burst_position: Vector2) -> void:
 	_score += score_value
+	_kills_since_weapon_drop += 1
+	_maybe_spawn_powerup_drop(burst_position)
 	_spawn_burst_effect(burst_position, GameSession.COLOR_FG, 18.0)
 	AudioDirector.play_sfx("enemy_pop")
 
@@ -369,6 +385,7 @@ func _on_player_feedback_requested(event_name: String, event_position: Vector2) 
 
 func _spawn_burst_effect(at_position: Vector2, color: Color, radius: float, mode: String = "ring") -> void:
 	var effect := FEEDBACK_BURST_SCENE.instantiate()
+	_mark_gameplay_node(effect)
 	effect.position = at_position
 	effect.setup({
 		"color": color,
@@ -376,6 +393,59 @@ func _spawn_burst_effect(at_position: Vector2, color: Color, radius: float, mode
 		"mode": mode,
 	})
 	add_child(effect)
+
+
+func _maybe_spawn_powerup_drop(at_position: Vector2) -> void:
+	if get_tree().get_nodes_in_group("powerup").size() > 0:
+		return
+	if _kills_since_weapon_drop >= 8:
+		var guaranteed_kind := "weapon" if _player_weapon < 3 else "repair"
+		_spawn_runtime_powerup(guaranteed_kind, at_position)
+		_kills_since_weapon_drop = 0
+		_random_drop_cooldown = 4.0
+		return
+	if _random_drop_cooldown > 0.0:
+		return
+	if randf() > 0.11:
+		return
+	var random_kind := _roll_random_drop_kind()
+	_spawn_runtime_powerup(random_kind, at_position)
+	_random_drop_cooldown = 5.5
+
+
+func _roll_random_drop_kind() -> String:
+	var roll := randf()
+	if _player_weapon < 3 and roll < 0.16:
+		return "weapon"
+	if roll < 0.74:
+		return "repair"
+	return "overdrive"
+
+
+func _spawn_runtime_powerup(kind_name: String, at_position: Vector2) -> void:
+	var pickup := POWERUP_SCENE.instantiate()
+	_mark_gameplay_node(pickup)
+	pickup.position = Vector2(
+		clamp(at_position.x, 140.0, GameSession.VIEW_SIZE.x - 120.0),
+		clamp(at_position.y, 96.0, GameSession.VIEW_SIZE.y - 84.0)
+	)
+	pickup.setup({
+		"kind": kind_name,
+		"speed": 118.0,
+	})
+	add_child(pickup)
+
+
+func _mark_gameplay_node(node: Node) -> void:
+	node.process_mode = Node.PROCESS_MODE_PAUSABLE
+
+
+func _trigger_boss_warning() -> void:
+	_boss_warning_active = true
+	_hud.show_center_message("%s WARNING" % _stage_name, 1.2, GameSession.COLOR_ALERT)
+	_hud.show_notice("Boss signature detected. Hold formation.", 1.4, GameSession.COLOR_ALERT)
+	_hud.flash(GameSession.COLOR_ALERT, 0.32)
+	AudioDirector.play_sfx("boss_alarm")
 
 
 func _clear_projectiles() -> void:

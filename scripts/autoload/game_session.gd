@@ -1,7 +1,7 @@
 extends Node
 
 const VIEW_SIZE := Vector2(960.0, 540.0)
-const PLAYER_BOUNDS := Rect2(78.0, 72.0, 280.0, 396.0)
+const PLAYER_BOUNDS := Rect2(22.0, 70.0, VIEW_SIZE.x - 44.0, VIEW_SIZE.y - 118.0)
 const COLOR_BG := Color(0.03, 0.06, 0.03, 1.0)
 const COLOR_GRID := Color(0.09, 0.18, 0.09, 1.0)
 const COLOR_DIM := Color(0.23, 0.42, 0.23, 1.0)

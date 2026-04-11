@@ -15,6 +15,7 @@ var _progress_fill: ColorRect
 var _flash_rect: ColorRect
 var _pause_panel: PanelContainer
 var _pause_info: Label
+var _pause_resume_button: Button
 
 var _center_timer := 0.0
 var _notice_timer := 0.0
@@ -169,9 +170,9 @@ func _build_ui() -> void:
 	_pause_info.add_theme_color_override("font_color", GameSession.COLOR_DIM)
 	pause_layout.add_child(_pause_info)
 
-	var resume_button := _pause_button("RESUME")
-	resume_button.pressed.connect(_on_resume_pressed)
-	pause_layout.add_child(resume_button)
+	_pause_resume_button = _pause_button("RESUME")
+	_pause_resume_button.pressed.connect(_on_resume_pressed)
+	pause_layout.add_child(_pause_resume_button)
 
 	var restart_button := _pause_button("RESTART RUN")
 	restart_button.pressed.connect(_on_restart_pressed)
@@ -241,12 +242,14 @@ func flash(color: Color = GameSession.COLOR_HIT, alpha: float = 0.35) -> void:
 	_flash_rect.color = color
 	_flash_rect.modulate.a = alpha
 	_flash_rect.visible = true
-	_flash_timer = 0.18
+	_flash_timer = 0.24
 
 
 func show_pause(score: int, best_score: int) -> void:
 	_pause_info.text = "Current %06d   Best %06d" % [score, best_score]
 	_pause_panel.visible = true
+	if _pause_resume_button != null:
+		_pause_resume_button.grab_focus()
 
 
 func hide_pause() -> void:

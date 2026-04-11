@@ -15,12 +15,14 @@ func _build_ui() -> void:
 	background.color = GameSession.COLOR_BG
 	add_child(background)
 
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
+
 	var frame := PanelContainer.new()
-	frame.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	frame.custom_minimum_size = Vector2(560.0, 360.0)
-	frame.position = Vector2(200.0, 90.0)
 	frame.add_theme_stylebox_override("panel", _panel_box())
-	add_child(frame)
+	center.add_child(frame)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 36)
@@ -54,7 +56,7 @@ func _build_ui() -> void:
 	content.add_child(spacer)
 
 	var summary := Label.new()
-	summary.text = "Two-sector arcade run\\nPush through enemy formations, collect upgrades, defeat two bosses."
+	summary.text = "Two-sector arcade run\nPush through enemy formations, collect upgrades, defeat two bosses."
 	summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	summary.add_theme_font_size_override("font_size", 18)
 	summary.add_theme_color_override("font_color", GameSession.COLOR_FG)
@@ -95,7 +97,7 @@ func _build_ui() -> void:
 	content.add_child(_start_button)
 
 	var controls := Label.new()
-	controls.text = "Move: WASD / Arrow Keys\\nFire / Confirm: Space or Z\\nPause: Esc / P"
+	controls.text = "Move: WASD / Arrow Keys\nFire / Confirm: Space or Z\nPause: Esc / P"
 	controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	controls.add_theme_font_size_override("font_size", 14)
 	controls.add_theme_color_override("font_color", GameSession.COLOR_DIM)

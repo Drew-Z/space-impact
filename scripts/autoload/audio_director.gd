@@ -178,11 +178,11 @@ func _music_sequence_for(mode: String) -> Array:
 	match mode:
 		"combat":
 			return [
-				{"freq": 220.0, "dur": 0.16, "amp": 0.06},
-				{"freq": 330.0, "dur": 0.12, "amp": 0.06},
-				{"freq": 262.0, "dur": 0.16, "amp": 0.06},
-				{"freq": 392.0, "dur": 0.18, "amp": 0.07},
-				{"freq": 294.0, "dur": 0.12, "amp": 0.06},
+				{"freq": 220.0, "dur": 0.16, "amp": 0.05},
+				{"freq": 330.0, "dur": 0.12, "amp": 0.05},
+				{"freq": 262.0, "dur": 0.16, "amp": 0.05},
+				{"freq": 392.0, "dur": 0.18, "amp": 0.06},
+				{"freq": 294.0, "dur": 0.12, "amp": 0.05},
 				{"freq": 0.0, "dur": 0.08, "amp": 0.0},
 			]
 		"pause":
@@ -221,9 +221,9 @@ func _music_sequence_for(mode: String) -> Array:
 func _sfx_profile(name: String) -> Dictionary:
 	match name:
 		"shoot":
-			return {"duration": 0.06, "freq": 980.0, "target_freq": 780.0, "amp": 0.12, "wave": "square"}
+			return {"duration": 0.05, "freq": 920.0, "target_freq": 760.0, "amp": 0.085, "wave": "square"}
 		"hit":
-			return {"duration": 0.12, "freq": 240.0, "target_freq": 120.0, "amp": 0.14, "wave": "hybrid"}
+			return {"duration": 0.1, "freq": 220.0, "target_freq": 140.0, "amp": 0.1, "wave": "hybrid"}
 		"pickup":
 			return {"duration": 0.16, "freq": 420.0, "target_freq": 720.0, "amp": 0.11, "wave": "triangle"}
 		"repair":
@@ -231,7 +231,7 @@ func _sfx_profile(name: String) -> Dictionary:
 		"overdrive":
 			return {"duration": 0.24, "freq": 340.0, "target_freq": 920.0, "amp": 0.13, "wave": "square"}
 		"enemy_pop":
-			return {"duration": 0.1, "freq": 300.0, "target_freq": 80.0, "amp": 0.12, "wave": "hybrid"}
+			return {"duration": 0.09, "freq": 280.0, "target_freq": 90.0, "amp": 0.095, "wave": "hybrid"}
 		"boss_alarm":
 			return {"duration": 0.22, "freq": 180.0, "target_freq": 280.0, "amp": 0.14, "wave": "square"}
 		"boss_down":

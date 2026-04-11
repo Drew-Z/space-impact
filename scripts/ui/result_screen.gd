@@ -18,12 +18,14 @@ func _build_ui() -> void:
 	background.color = GameSession.COLOR_BG
 	add_child(background)
 
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
+
 	var frame := PanelContainer.new()
-	frame.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	frame.custom_minimum_size = Vector2(560.0, 360.0)
-	frame.position = Vector2(200.0, 90.0)
 	frame.add_theme_stylebox_override("panel", _panel_box())
-	add_child(frame)
+	center.add_child(frame)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 36)
