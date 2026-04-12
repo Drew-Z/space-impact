@@ -48,6 +48,12 @@
   负责菜单、HUD、暂停、结算与焦点流转
 - 全局状态：`scripts/autoload/game_session.gd`
   负责配色常量、边界、输入、记录和本局结果
+- 配置目录：`scripts/game/stage_catalog.gd`
+  集中维护敌人基础参数、Boss 支援覆盖规则与 Boss 文案映射，减少 `game_root.gd` 中的配置堆积
+- 节奏目录：`scripts/game/stage_schedule.gd`
+  集中维护五个 Sector 与最终阶段的时间表数据，避免战斗主流程继续膨胀
+- 平衡目录：`scripts/game/run_balance.gd`
+  集中维护掉落节奏、Boss 警报次数与运行时拾取生成边界等规则
 
 ## 配置策略
 
@@ -75,6 +81,8 @@
   - `boss config`
   - 节奏 helper，如 `burst` 与 `staggered_bursts`
 - `enemy_config()` 用统一入口管理敌机基础参数
+- 当前已将敌人基础参数与 Boss 支援覆盖规则下沉到 `stage_catalog.gd`，后续新增敌机或微调参数时优先改配置目录，而不是继续把参数塞回主流程
+- 当前已将关卡时间表拆到 `stage_schedule.gd`，将掉落与警报规则拆到 `run_balance.gd`
 - Boss 使用单脚本 + 多 profile，而不是四套平行脚本，避免重复维护
 
 ## 战斗技术策略

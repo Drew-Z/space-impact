@@ -2,6 +2,7 @@ extends Node
 
 const VIEW_SIZE := Vector2(960.0, 540.0)
 const PLAYER_BOUNDS := Rect2(22.0, 70.0, VIEW_SIZE.x - 44.0, VIEW_SIZE.y - 118.0)
+const TOTAL_PHASES := 6
 const COLOR_BG := Color(0.03, 0.06, 0.03, 1.0)
 const COLOR_GRID := Color(0.09, 0.18, 0.09, 1.0)
 const COLOR_DIM := Color(0.23, 0.42, 0.23, 1.0)
@@ -25,7 +26,7 @@ var last_result := {
 	"lives_left": 0,
 	"stages_cleared": 0,
 	"stage_reached": 1,
-	"total_stages": 6,
+	"total_stages": TOTAL_PHASES,
 	"best_score": 0,
 	"new_record": false,
 }
@@ -77,6 +78,17 @@ const TEXTS := {
 		"dangerous_sub": "危险目标接近",
 		"boss_frenzy": "BOSS 狂暴",
 		"boss_shift": "Boss 阵型切换",
+		"boss_shift_striker": "突击阵列展开",
+		"boss_shift_carrier": "无人机舱门开启",
+		"boss_shift_fortress": "堡垒弹幕展开",
+		"boss_shift_reaper": "镰翼俯冲切换",
+		"boss_shift_bastion": "核心壁垒升压",
+		"boss_spawn_striker": "高速突击舰逼近，准备迎击。",
+		"boss_spawn_carrier": "敌方母舰开启弹仓，注意增援编队。",
+		"boss_spawn_fortress": "重装堡垒锁定航道，准备穿墙火力。",
+		"boss_spawn_reaper": "镰翼舰进入切割航线，保持机动。",
+		"boss_spawn_bastion": "要塞核心展开防壁，注意正面压制。",
+		"boss_spawn_overlord": "最终核心启动，全部火力准备。",
 		"final_boss_shift": "核心相位偏移",
 		"final_boss_meltdown": "核心熔毁临界",
 		"final_core_destroyed": "最终核心已击破",
@@ -145,6 +157,17 @@ const TEXTS := {
 		"dangerous_sub": "Hostile target approaching",
 		"boss_frenzy": "BOSS FRENZY",
 		"boss_shift": "BOSS PATTERN SHIFT",
+		"boss_shift_striker": "SPEAR ARRAY ENGAGED",
+		"boss_shift_carrier": "HANGAR DOORS OPEN",
+		"boss_shift_fortress": "FORTRESS BARRAGE ONLINE",
+		"boss_shift_reaper": "SCYTHE DIVE PATTERN",
+		"boss_shift_bastion": "CORE SHIELD SURGE",
+		"boss_spawn_striker": "Fast assault craft inbound. Brace for impact.",
+		"boss_spawn_carrier": "Enemy carrier opening hangars. Watch the support lanes.",
+		"boss_spawn_fortress": "Heavy fortress locking the corridor. Prepare for wall fire.",
+		"boss_spawn_reaper": "Reaper wing entering the lane. Stay mobile.",
+		"boss_spawn_bastion": "Bastion core deployed. Expect frontal suppression.",
+		"boss_spawn_overlord": "Final core active. Commit all firepower.",
 		"final_boss_shift": "CORE PHASE SHIFT",
 		"final_boss_meltdown": "CORE MELTDOWN",
 		"final_core_destroyed": "FINAL CORE DESTROYED",
@@ -240,7 +263,7 @@ func begin_new_run() -> void:
 
 
 func begin_continue_run() -> void:
-	pending_start_phase = clamp(max_unlocked_phase, 1, int(last_result.get("total_stages", 6)))
+	pending_start_phase = clamp(max_unlocked_phase, 1, int(last_result.get("total_stages", TOTAL_PHASES)))
 	pending_start_weapon = max(int(last_result.get("weapon_level", 1)), min(1 + (pending_start_phase - 1) * 2, 9))
 
 

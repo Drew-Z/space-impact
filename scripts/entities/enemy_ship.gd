@@ -70,6 +70,10 @@ func _process(delta: float) -> void:
 			position.y = base_y + sin(age * frequency) * amplitude
 		"sentinel":
 			position.y = base_y + cos(age * frequency) * amplitude * 0.18
+		"skirmisher":
+			position.y = base_y + sin(age * frequency) * amplitude * 0.78 + sin(age * frequency * 0.45) * amplitude * 0.34
+		"lancer":
+			position.y = base_y + sin(age * frequency) * amplitude * 0.22
 	if shoot_interval > 0.0 and global_position.x < GameSession.VIEW_SIZE.x - 60.0:
 		shoot_timer -= delta
 		if shoot_timer <= 0.0:
@@ -119,6 +123,12 @@ func _build_shots() -> Array:
 				_enemy_shot(Vector2(-1.0, -0.2), 310.0),
 				_enemy_shot(Vector2.LEFT, 326.0),
 				_enemy_shot(Vector2(-1.0, 0.2), 310.0),
+			]
+		"fan":
+			return [
+				_enemy_shot(Vector2(-1.0, -0.32), 324.0),
+				_enemy_shot(Vector2(-1.0, -0.08), 344.0),
+				_enemy_shot(Vector2(-1.0, 0.18), 324.0),
 			]
 		"cross":
 			return [
@@ -202,6 +212,30 @@ func _draw() -> void:
 			draw_rect(Rect2(Vector2(-20.0, -4.0), Vector2(10.0, 8.0)), draw_tint, true)
 			draw_rect(Rect2(Vector2(-2.0, -4.0), Vector2(10.0, 8.0)), GameSession.COLOR_BG, true)
 			draw_rect(Rect2(Vector2(8.0, -2.0), Vector2(4.0, 4.0)), GameSession.COLOR_HIT, true)
+		"skirmisher":
+			var skirmisher_points := PackedVector2Array([
+				Vector2(14.0, -10.0),
+				Vector2(2.0, -4.0),
+				Vector2(-10.0, -10.0),
+				Vector2(-16.0, 0.0),
+				Vector2(-10.0, 10.0),
+				Vector2(2.0, 4.0),
+				Vector2(14.0, 10.0),
+				Vector2(6.0, 0.0),
+			])
+			draw_polygon(skirmisher_points, PackedColorArray([draw_tint, draw_tint, draw_tint, draw_tint, draw_tint, draw_tint, draw_tint, draw_tint]))
+			draw_rect(Rect2(Vector2(-2.0, -2.0), Vector2(8.0, 4.0)), GameSession.COLOR_BG, true)
+		"lancer":
+			var lancer_points := PackedVector2Array([
+				Vector2(18.0, 0.0),
+				Vector2(-2.0, -12.0),
+				Vector2(-18.0, -8.0),
+				Vector2(-10.0, 0.0),
+				Vector2(-18.0, 8.0),
+				Vector2(-2.0, 12.0),
+			])
+			draw_polygon(lancer_points, PackedColorArray([draw_tint, draw_tint, draw_tint, draw_tint, draw_tint, draw_tint]))
+			draw_rect(Rect2(Vector2(2.0, -3.0), Vector2(8.0, 6.0)), GameSession.COLOR_HIT, true)
 		_:
 			var body := PackedVector2Array([
 				Vector2(12.0, -7.0),

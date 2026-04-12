@@ -1,5 +1,8 @@
 extends Node2D
 
+const STAGE_CATALOG := preload("res://scripts/game/stage_catalog.gd")
+const STAGE_SCHEDULE := preload("res://scripts/game/stage_schedule.gd")
+const RUN_BALANCE := preload("res://scripts/game/run_balance.gd")
 const STARFIELD_SCENE := preload("res://scenes/game/starfield.tscn")
 const HUD_SCENE := preload("res://scenes/ui/hud.tscn")
 const PLAYER_SCENE := preload("res://scenes/entities/player_ship.tscn")
@@ -103,7 +106,7 @@ func _process(delta: float) -> void:
 		if _boss_alarm_timer == 0.0:
 			AudioDirector.play_sfx("boss_alarm")
 			_boss_alarm_bursts_left -= 1
-			_boss_alarm_timer = 0.34
+			_boss_alarm_timer = RUN_BALANCE.BOSS_ALARM_INTERVAL
 	_random_drop_cooldown = max(_random_drop_cooldown - delta, 0.0)
 	_elapsed += delta
 
@@ -217,7 +220,7 @@ func _build_stages() -> Array:
 				"score_value": 3600,
 				"target_x": 748.0,
 				"support_interval": 6.8,
-				"support_pattern": ["wave", "dart", "wave", "dart"],
+				"support_pattern": ["wave", "skirmisher", "wave", "skirmisher"],
 				"support_lanes": [126.0, 210.0, 330.0, 414.0],
 				"support_count": 2,
 				"support_cap": 2,
@@ -249,7 +252,7 @@ func _build_stages() -> Array:
 				"score_value": 4800,
 				"target_x": 724.0,
 				"support_interval": 5.8,
-				"support_pattern": ["sentinel", "spinner", "tank", "spinner"],
+				"support_pattern": ["sentinel", "lancer", "tank", "lancer"],
 				"support_lanes": [118.0, 206.0, 334.0, 422.0],
 				"support_count": 2,
 				"support_cap": 3,
@@ -282,7 +285,7 @@ func _build_stages() -> Array:
 				"score_value": 6800,
 				"target_x": 756.0,
 				"support_interval": 4.8,
-				"support_pattern": ["dart", "spinner", "dart", "spinner"],
+				"support_pattern": ["dart", "skirmisher", "dart", "skirmisher"],
 				"support_lanes": [132.0, 246.0, 360.0],
 				"support_count": 2,
 				"support_cap": 4,
@@ -314,7 +317,7 @@ func _build_stages() -> Array:
 				"score_value": 8400,
 				"target_x": 728.0,
 				"support_interval": 4.4,
-				"support_pattern": ["sentinel", "tank", "spinner", "tank"],
+				"support_pattern": ["lancer", "tank", "spinner", "lancer"],
 				"support_lanes": [124.0, 214.0, 326.0, 416.0],
 				"support_count": 2,
 				"support_cap": 4,
@@ -347,7 +350,7 @@ func _build_stages() -> Array:
 				"score_value": 18000,
 				"target_x": 700.0,
 				"support_interval": 3.5,
-				"support_pattern": ["dart", "spinner", "sentinel", "dart", "sentinel"],
+				"support_pattern": ["dart", "skirmisher", "sentinel", "lancer", "sentinel"],
 				"support_lanes": [118.0, 190.0, 270.0, 350.0, 422.0],
 				"support_count": 3,
 				"support_cap": 5,
@@ -389,216 +392,27 @@ func _stage_background(
 
 
 func _build_sector_1_schedule() -> Array:
-	var schedule: Array = []
-	schedule.append(_burst_event(1.0, "straight", [112.0, 188.0, 264.0, 340.0], {"x_spacing": 58.0}))
-	schedule.append_array(_staggered_bursts(4.4, "straight", [108.0, 392.0, 148.0, 352.0, 188.0, 312.0], 0.42, {
-		"overrides": {"speed": 246.0},
-	}))
-	schedule.append(_burst_event(8.1, "wave", [138.0, 218.0, 298.0, 378.0], {"x_spacing": 66.0}))
-	schedule.append_array(_staggered_bursts(11.8, "dart", [122.0, 404.0, 168.0, 358.0], 0.38, {
-		"overrides": {"shoot_interval": 1.9},
-	}))
-	schedule.append(_burst_event(15.7, "tank", [166.0, 336.0], {
-		"x_spacing": 102.0,
-		"overrides": {"health": 4},
-	}))
-	schedule.append(_burst_event(17.0, "straight", [124.0, 210.0, 296.0, 382.0], {
-		"x_spacing": 66.0,
-		"overrides": {"speed": 258.0},
-	}))
-	schedule.append(_powerup_event(20.2, "weapon", 254.0))
-	schedule.append(_powerup_event(30.2, "overdrive", 196.0))
-	schedule.append_array(_staggered_bursts(23.2, "wave", [118.0, 194.0, 270.0, 346.0, 422.0], 0.34, {
-		"overrides": {"speed": 224.0},
-	}))
-	schedule.append(_powerup_event(34.8, "weapon", 312.0))
-	schedule.append(_burst_event(27.6, "dart", [124.0, 240.0, 356.0], {
-		"x_spacing": 80.0,
-		"overrides": {"shoot_interval": 1.72},
-	}))
-	schedule.append(_burst_event(31.2, "straight", [148.0, 230.0, 312.0, 394.0], {
-		"x_spacing": 60.0,
-		"overrides": {"speed": 266.0},
-	}))
-	schedule.append(_burst_event(34.6, "tank", [138.0, 270.0, 402.0], {
-		"x_spacing": 84.0,
-		"overrides": {"health": 4, "shoot_interval": 1.58},
-	}))
-	schedule.append(_boss_event(38.8))
-	return schedule
+	return STAGE_SCHEDULE.sector_1()
 
 
 func _build_sector_2_schedule() -> Array:
-	var schedule: Array = []
-	schedule.append_array(_staggered_bursts(1.2, "straight", [106.0, 434.0, 154.0, 386.0, 202.0, 338.0, 250.0, 290.0], 0.28, {
-		"overrides": {"speed": 264.0},
-	}))
-	schedule.append(_burst_event(5.2, "wave", [126.0, 186.0, 246.0, 306.0, 366.0, 426.0], {
-		"x_spacing": 48.0,
-		"overrides": {"speed": 238.0},
-	}))
-	schedule.append(_powerup_event(8.6, "overdrive", 300.0))
-	schedule.append_array(_staggered_bursts(10.2, "dart", [124.0, 248.0, 372.0, 186.0, 310.0], 0.24, {
-		"overrides": {"shoot_interval": 1.48},
-	}))
-	schedule.append(_burst_event(14.0, "tank", [142.0, 270.0, 398.0], {
-		"x_spacing": 82.0,
-		"overrides": {"health": 5, "shoot_interval": 1.4},
-	}))
-	schedule.append(_burst_event(18.2, "wave", [152.0, 248.0, 344.0], {
-		"x_spacing": 88.0,
-		"overrides": {"health": 3, "speed": 232.0},
-	}))
-	schedule.append(_powerup_event(23.6, "weapon", 240.0))
-	schedule.append_array(_staggered_bursts(21.6, "straight", [118.0, 422.0, 162.0, 378.0, 206.0, 334.0], 0.26, {
-		"overrides": {"speed": 276.0},
-	}))
-	schedule.append(_burst_event(25.2, "dart", [114.0, 174.0, 366.0, 426.0], {
-		"x_spacing": 62.0,
-		"overrides": {"shoot_interval": 1.24},
-	}))
-	schedule.append(_powerup_event(31.2, "overdrive", 214.0))
-	schedule.append(_burst_event(30.0, "tank", [120.0, 220.0, 320.0, 420.0], {
-		"x_spacing": 66.0,
-		"overrides": {"health": 5, "shoot_interval": 1.22},
-	}))
-	schedule.append(_powerup_event(37.8, "weapon", 374.0))
-	schedule.append(_burst_event(35.0, "wave", [138.0, 210.0, 282.0, 354.0, 426.0], {
-		"x_spacing": 52.0,
-		"overrides": {"health": 3, "speed": 236.0},
-	}))
-	schedule.append_array(_staggered_bursts(39.0, "dart", [116.0, 424.0, 164.0, 376.0, 212.0, 328.0], 0.22, {
-		"overrides": {"shoot_interval": 1.14},
-	}))
-	schedule.append(_boss_event(44.8))
-	return schedule
+	return STAGE_SCHEDULE.sector_2()
 
 
 func _build_sector_3_schedule() -> Array:
-	var schedule: Array = []
-	schedule.append_array(_staggered_bursts(1.0, "spinner", [120.0, 420.0, 168.0, 372.0], 0.32, {
-		"overrides": {"shoot_interval": 1.4},
-	}))
-	schedule.append(_powerup_event(9.0, "weapon", 268.0))
-	schedule.append(_burst_event(6.2, "sentinel", [146.0, 268.0, 390.0], {
-		"x_spacing": 86.0,
-		"overrides": {"shoot_interval": 1.52},
-	}))
-	schedule.append_array(_staggered_bursts(10.4, "dart", [118.0, 202.0, 338.0, 422.0], 0.24, {
-		"overrides": {"shoot_interval": 1.18},
-	}))
-	schedule.append(_powerup_event(20.4, "overdrive", 194.0))
-	schedule.append(_burst_event(15.4, "tank", [140.0, 270.0, 400.0], {
-		"x_spacing": 78.0,
-		"overrides": {"health": 6, "shoot_interval": 1.3},
-	}))
-	schedule.append(_burst_event(19.2, "spinner", [150.0, 250.0, 350.0], {
-		"x_spacing": 74.0,
-		"overrides": {"shoot_interval": 1.12},
-	}))
-	schedule.append(_burst_event(24.2, "wave", [132.0, 192.0, 252.0, 312.0, 372.0, 432.0], {
-		"x_spacing": 46.0,
-		"overrides": {"health": 3, "speed": 242.0},
-	}))
-	schedule.append(_burst_event(29.0, "sentinel", [118.0, 220.0, 322.0, 424.0], {
-		"x_spacing": 70.0,
-		"overrides": {"health": 4, "shoot_interval": 1.18},
-	}))
-	schedule.append(_powerup_event(33.8, "overdrive", 360.0))
-	schedule.append_array(_staggered_bursts(34.2, "spinner", [110.0, 430.0, 160.0, 380.0, 210.0, 330.0], 0.22, {
-		"overrides": {"shoot_interval": 0.98},
-	}))
-	schedule.append(_boss_event(43.2))
-	return schedule
+	return STAGE_SCHEDULE.sector_3()
 
 
 func _build_sector_4_schedule() -> Array:
-	var schedule: Array = []
-	schedule.append(_burst_event(1.0, "sentinel", [124.0, 214.0, 304.0, 394.0], {
-		"x_spacing": 68.0,
-		"overrides": {"health": 4, "shoot_interval": 1.14},
-	}))
-	schedule.append_array(_staggered_bursts(4.0, "dart", [116.0, 426.0, 160.0, 382.0, 204.0, 338.0], 0.18, {
-		"overrides": {"shoot_interval": 1.02},
-	}))
-	schedule.append(_powerup_event(11.0, "weapon", 210.0))
-	schedule.append(_burst_event(9.6, "spinner", [142.0, 232.0, 322.0, 412.0], {
-		"x_spacing": 62.0,
-		"overrides": {"shoot_interval": 0.96},
-	}))
-	schedule.append(_burst_event(13.8, "tank", [136.0, 232.0, 328.0, 424.0], {
-		"x_spacing": 70.0,
-		"overrides": {"health": 6, "shoot_interval": 1.14},
-	}))
-	schedule.append(_powerup_event(24.8, "weapon", 286.0))
-	schedule.append(_burst_event(18.4, "wave", [126.0, 178.0, 230.0, 282.0, 334.0, 386.0, 438.0], {
-		"x_spacing": 42.0,
-		"overrides": {"health": 3, "speed": 248.0},
-	}))
-	schedule.append(_burst_event(24.2, "sentinel", [120.0, 188.0, 256.0, 324.0, 392.0], {
-		"x_spacing": 54.0,
-		"overrides": {"health": 4, "shoot_interval": 1.02},
-	}))
-	schedule.append_array(_staggered_bursts(28.2, "spinner", [112.0, 428.0, 164.0, 376.0, 216.0, 324.0], 0.18, {
-		"overrides": {"shoot_interval": 0.84},
-	}))
-	schedule.append(_powerup_event(35.4, "overdrive", 178.0))
-	schedule.append(_burst_event(33.0, "tank", [150.0, 270.0, 390.0], {
-		"x_spacing": 82.0,
-		"overrides": {"health": 7, "shoot_interval": 1.02},
-	}))
-	schedule.append(_burst_event(38.0, "dart", [122.0, 202.0, 282.0, 362.0, 442.0], {
-		"x_spacing": 58.0,
-		"overrides": {"shoot_interval": 0.92},
-	}))
-	schedule.append(_powerup_event(42.2, "overdrive", 320.0))
-	schedule.append(_boss_event(46.8))
-	return schedule
+	return STAGE_SCHEDULE.sector_4()
 
 
 func _build_sector_5_schedule() -> Array:
-	var schedule: Array = []
-	schedule.append_array(_staggered_bursts(1.0, "sentinel", [116.0, 424.0, 164.0, 376.0, 212.0, 328.0], 0.2, {
-		"overrides": {"health": 4, "shoot_interval": 1.0},
-	}))
-	schedule.append(_burst_event(5.4, "spinner", [130.0, 206.0, 282.0, 358.0, 434.0], {
-		"x_spacing": 52.0,
-		"overrides": {"shoot_interval": 0.94},
-	}))
-	schedule.append(_powerup_event(12.2, "weapon", 250.0))
-	schedule.append(_burst_event(14.0, "tank", [132.0, 224.0, 316.0, 408.0], {
-		"x_spacing": 66.0,
-		"overrides": {"health": 7, "shoot_interval": 0.98},
-	}))
-	schedule.append_array(_staggered_bursts(19.4, "dart", [118.0, 422.0, 174.0, 366.0, 230.0, 310.0], 0.18, {
-		"overrides": {"shoot_interval": 0.84},
-	}))
-	schedule.append(_powerup_event(24.8, "overdrive", 178.0))
-	schedule.append(_burst_event(27.4, "sentinel", [136.0, 228.0, 320.0, 412.0], {
-		"x_spacing": 58.0,
-		"overrides": {"health": 5, "shoot_interval": 0.92},
-	}))
-	schedule.append(_burst_event(32.6, "wave", [124.0, 176.0, 228.0, 280.0, 332.0, 384.0, 436.0], {
-		"x_spacing": 40.0,
-		"overrides": {"health": 3, "speed": 252.0},
-	}))
-	schedule.append(_powerup_event(37.0, "weapon", 302.0))
-	schedule.append_array(_staggered_bursts(39.2, "spinner", [120.0, 420.0, 170.0, 370.0, 220.0, 320.0], 0.16, {
-		"overrides": {"shoot_interval": 0.8},
-	}))
-	schedule.append(_burst_event(44.4, "tank", [152.0, 270.0, 388.0], {
-		"x_spacing": 84.0,
-		"overrides": {"health": 8, "shoot_interval": 0.92},
-	}))
-	schedule.append(_boss_event(52.0))
-	return schedule
+	return STAGE_SCHEDULE.sector_5()
 
 
 func _build_final_schedule() -> Array:
-	return [
-		_powerup_event(1.4, "overdrive", 270.0),
-		_boss_event(3.4),
-	]
+	return STAGE_SCHEDULE.final_sector()
 
 
 func _burst_event(time: float, enemy_type: String, lanes: Array, extra: Dictionary = {}) -> Dictionary:
@@ -691,84 +505,7 @@ func _spawn_burst(event: Dictionary) -> void:
 
 
 func _enemy_config(enemy_type: String, base_y: float, overrides: Dictionary = {}) -> Dictionary:
-	var config: Dictionary
-	match enemy_type:
-		"wave":
-			config = {
-				"enemy_type": "wave",
-				"speed": 218.0,
-				"health": 2,
-				"amplitude": 34.0,
-				"frequency": 3.8,
-				"base_y": base_y,
-				"score_value": 140,
-				"tint": GameSession.COLOR_FG,
-			}
-		"tank":
-			config = {
-				"enemy_type": "tank",
-				"speed": 154.0,
-				"health": 5,
-				"amplitude": 24.0,
-				"frequency": 2.2,
-				"base_y": base_y,
-				"score_value": 260,
-				"shoot_interval": 1.7,
-				"shot_mode": "single",
-				"tint": GameSession.COLOR_ALERT,
-			}
-		"spinner":
-			config = {
-				"enemy_type": "spinner",
-				"speed": 208.0,
-				"health": 3,
-				"amplitude": 46.0,
-				"frequency": 4.8,
-				"base_y": base_y,
-				"score_value": 220,
-				"shoot_interval": 1.32,
-				"shot_mode": "spread",
-				"tint": GameSession.COLOR_ALERT,
-			}
-		"sentinel":
-			config = {
-				"enemy_type": "sentinel",
-				"speed": 174.0,
-				"health": 4,
-				"amplitude": 18.0,
-				"frequency": 2.6,
-				"base_y": base_y,
-				"score_value": 240,
-				"shoot_interval": 1.45,
-				"shot_mode": "aimed",
-				"tint": GameSession.COLOR_FG,
-			}
-		"dart":
-			var drift := -1.0 if base_y > GameSession.VIEW_SIZE.y * 0.5 else 1.0
-			config = {
-				"enemy_type": "dart",
-				"speed": 270.0,
-				"health": 2,
-				"base_y": base_y,
-				"score_value": 170,
-				"shoot_interval": 0.0,
-				"shot_mode": "dart",
-				"vertical_speed": 118.0,
-				"drift_direction": drift,
-				"tint": GameSession.COLOR_HIT,
-			}
-		_:
-			config = {
-				"enemy_type": "straight",
-				"speed": 252.0,
-				"health": 2,
-				"base_y": base_y,
-				"score_value": 110,
-				"tint": GameSession.COLOR_DIM,
-			}
-	for key in overrides.keys():
-		config[key] = overrides[key]
-	return config
+	return STAGE_CATALOG.enemy_config(enemy_type, base_y, overrides)
 
 
 func _spawn_powerup(event: Dictionary) -> void:
@@ -792,6 +529,7 @@ func _spawn_boss() -> void:
 	_boss.damaged.connect(_on_boss_damaged)
 	add_child(_boss)
 	_hud.show_center_message(GameSession.loc("stage_boss", [_stage_name]), 1.4)
+	_hud.show_notice(GameSession.loc(STAGE_CATALOG.boss_spawn_notice_key(String(_boss_config.get("profile", "")))), 1.2, GameSession.COLOR_ALERT)
 	_boss_warning_active = false
 	_boss_support_timer = float(_boss_config.get("support_interval", 0.0))
 	_boss_support_wave_index = 0
@@ -923,18 +661,7 @@ func _spawn_boss_support() -> void:
 
 
 func _boss_support_overrides(enemy_type: String) -> Dictionary:
-	match enemy_type:
-		"tank":
-			return {"health": 1, "shoot_interval": 1.28, "speed": 184.0}
-		"spinner":
-			return {"health": 1, "shoot_interval": 1.08, "speed": 230.0}
-		"sentinel":
-			return {"health": 1, "shoot_interval": 1.16, "speed": 198.0}
-		"dart":
-			return {"health": 1, "shoot_interval": 0.0, "speed": 284.0}
-		"wave":
-			return {"health": 1, "speed": 240.0}
-	return {"health": 1, "speed": 260.0}
+	return STAGE_CATALOG.boss_support_overrides(enemy_type)
 
 
 func _on_player_state_changed(hull: int, max_hull: int, lives: int, weapon_level: int, status_text: String) -> void:
@@ -971,7 +698,7 @@ func _on_boss_damaged(hit_position: Vector2, current_hull: int, max_hull: int) -
 		var normal_ratio := float(current_hull) / float(max_hull)
 		if _boss_phase_alert_step < 1 and normal_ratio <= 0.72:
 			_boss_phase_alert_step = 1
-			_hud.show_notice(GameSession.loc("boss_shift"), 1.15, GameSession.COLOR_ALERT)
+			_hud.show_notice(GameSession.loc(STAGE_CATALOG.boss_shift_notice_key(profile_name)), 1.15, GameSession.COLOR_ALERT)
 			_hud.flash(GameSession.COLOR_ALERT, 0.16)
 	if profile_name == "overlord" and max_hull > 0:
 		var ratio := float(current_hull) / float(max_hull)
@@ -1086,42 +813,26 @@ func _spawn_burst_effect(at_position: Vector2, color: Color, radius: float, mode
 func _maybe_spawn_powerup_drop(at_position: Vector2) -> void:
 	if get_tree().get_nodes_in_group("powerup").size() > 0:
 		return
-	if _kills_since_weapon_drop >= 8:
-		var guaranteed_kind := "weapon" if _player_weapon < 13 else "overdrive"
+	if RUN_BALANCE.should_spawn_guaranteed_drop(_kills_since_weapon_drop):
+		var guaranteed_kind := RUN_BALANCE.guaranteed_drop_kind(_player_weapon)
 		_spawn_runtime_powerup(guaranteed_kind, at_position)
 		_kills_since_weapon_drop = 0
-		_random_drop_cooldown = 6.4
+		_random_drop_cooldown = RUN_BALANCE.GUARANTEED_DROP_COOLDOWN
 		return
-	if _random_drop_cooldown > 0.0:
+	if not RUN_BALANCE.should_roll_random_drop(_random_drop_cooldown):
 		return
-	if randf() > 0.06:
-		return
-	var random_kind := _roll_random_drop_kind()
+	var random_kind := RUN_BALANCE.random_drop_kind(_player_weapon)
 	_spawn_runtime_powerup(random_kind, at_position)
-	_random_drop_cooldown = 6.2
-
-
-func _roll_random_drop_kind() -> String:
-	var roll := randf()
-	if _player_weapon < 13 and roll < 0.34:
-		return "weapon"
-	if roll < 0.46:
-		return "repair"
-	if roll < 0.58:
-		return "shield"
-	return "overdrive"
+	_random_drop_cooldown = RUN_BALANCE.RANDOM_DROP_COOLDOWN
 
 
 func _spawn_runtime_powerup(kind_name: String, at_position: Vector2) -> void:
 	var pickup := POWERUP_SCENE.instantiate()
 	_mark_gameplay_node(pickup)
-	pickup.position = Vector2(
-		clamp(at_position.x, 140.0, GameSession.VIEW_SIZE.x - 120.0),
-		clamp(at_position.y, 96.0, GameSession.VIEW_SIZE.y - 84.0)
-	)
+	pickup.position = RUN_BALANCE.clamped_powerup_position(at_position)
 	pickup.setup({
 		"kind": kind_name,
-		"speed": 118.0,
+		"speed": RUN_BALANCE.RUNTIME_POWERUP_SPEED,
 	})
 	add_child(pickup)
 
@@ -1135,8 +846,8 @@ func _trigger_boss_warning() -> void:
 	_hud.show_notice(GameSession.loc("boss_warning_notice"), 1.6, GameSession.COLOR_ALERT)
 	_hud.show_danger_warning(1.55)
 	AudioDirector.play_sfx("boss_alarm")
-	_boss_alarm_bursts_left = 4
-	_boss_alarm_timer = 0.34
+	_boss_alarm_bursts_left = RUN_BALANCE.BOSS_ALARM_BURSTS - 1
+	_boss_alarm_timer = RUN_BALANCE.BOSS_ALARM_INTERVAL
 
 
 func _clear_projectiles() -> void:

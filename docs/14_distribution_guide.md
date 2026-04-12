@@ -6,7 +6,7 @@
 
 ## 当前建议发布版本
 
-- 推荐标签：`v1.0.1`
+- 推荐标签：`v1.1.1`
 - 当前分支：`main`
 - 当前许可证：`Apache-2.0`
 
@@ -26,7 +26,7 @@ build/windows/
 ## 本地导出前检查
 
 1. 用 Godot 4.6.1 打开项目，确认主菜单、战斗、结算流程可正常运行
-2. 确认 `README.md`、`CHANGELOG.md`、`LICENSE`、`docs/13_release_notes_v1.0.1.md` 已是最新
+2. 确认 `README.md`、`CHANGELOG.md`、`LICENSE`、`docs/17_release_notes_v1.1.1.md` 已是最新
 3. 确认截图资源位于：
    - `docs/media/menu.png`
    - `docs/media/gameplay.png`
@@ -45,7 +45,7 @@ build/windows/
 
 1. 打开 `Project -> Export`
 2. 新建 `Windows Desktop` 预设
-3. 导出到 `build/windows/SpaceWar.exe`
+3. 导出到 `build/windows/v1.1.1/SpaceWar.exe`
 4. 勾选适合当前发布方式的 PCK 选项
 5. 完成后脱离编辑器直接运行一次导出产物
 
@@ -59,13 +59,14 @@ build/windows/
 
 ## Release 页面建议附带内容
 
-- `SpaceWar.exe` 或压缩包
+- `build/windows/v1.1.1/SpaceWar.exe`
+- `build/windows/v1.1.1/SpaceWar.pck`
 - `LICENSE`
 - `README.md`
-- `docs/13_release_notes_v1.0.1.md`
+- `docs/17_release_notes_v1.1.1.md`
 - 三张展示截图
 
-## 若要继续做 v1.1.0
+## 若要继续做下一个版本
 
 如果后续继续更新，不建议覆盖当前已发布附件，而应：
 
