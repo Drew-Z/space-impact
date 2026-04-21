@@ -7,3 +7,4 @@ release/
 docs/media/*.import
 *.import*.tmp
 *.uid*.tmp
+*.uid
