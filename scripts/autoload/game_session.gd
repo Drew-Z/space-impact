@@ -27,6 +27,8 @@ var last_result := {
 	"stages_cleared": 0,
 	"stage_reached": 1,
 	"total_stages": TOTAL_PHASES,
+	"best_chain": 0,
+	"chain_bonus_score": 0,
 	"best_score": 0,
 	"new_record": false,
 }
@@ -68,10 +70,12 @@ const TEXTS := {
 		"result_score": "分数 %06d",
 		"result_detail": "时长 %.1fs   武器 %s   剩余船体 %d",
 		"result_note": "到达阶段 %d   完成 %d/%d",
+		"result_chain": "最高连击 x%d   连击奖励 %04d",
 		"result_best": "最高分 %06d%s",
 		"result_new_record": "   新纪录",
 		"result_again": "再次出击",
 		"result_menu": "返回主菜单",
+		"chain_notice": "连击 x%d  +%d",
 		"phase_warning": "%s 警报",
 		"boss_warning_notice": "Boss 信号已锁定，保持阵型。",
 		"dangerous": "DANGEROUS",
@@ -147,10 +151,12 @@ const TEXTS := {
 		"result_score": "Score %06d",
 		"result_detail": "Time %.1fs   Weapon %s   Hull Left %d",
 		"result_note": "Reached Phase %d   Cleared %d/%d",
+		"result_chain": "Best Chain x%d   Chain Bonus %04d",
 		"result_best": "Best Score %06d%s",
 		"result_new_record": "   NEW RECORD",
 		"result_again": "Run Again",
 		"result_menu": "Return To Menu",
+		"chain_notice": "CHAIN x%d  +%d",
 		"phase_warning": "%s WARNING",
 		"boss_warning_notice": "Boss signature detected. Hold formation.",
 		"dangerous": "DANGEROUS",
@@ -221,7 +227,7 @@ func _bind_action(action_name: String, keys: Array) -> void:
 		InputMap.action_add_event(action_name, input_event)
 
 
-func save_result(victory: bool, score: int, elapsed: float, weapon_level: int, lives_left: int, stages_cleared: int, stage_reached: int, total_stages: int) -> void:
+func save_result(victory: bool, score: int, elapsed: float, weapon_level: int, lives_left: int, stages_cleared: int, stage_reached: int, total_stages: int, best_chain: int = 0, chain_bonus_score: int = 0) -> void:
 	total_runs += 1
 	var new_record := score > high_score
 	if new_record:
@@ -237,6 +243,8 @@ func save_result(victory: bool, score: int, elapsed: float, weapon_level: int, l
 		"stages_cleared": stages_cleared,
 		"stage_reached": stage_reached,
 		"total_stages": total_stages,
+		"best_chain": best_chain,
+		"chain_bonus_score": chain_bonus_score,
 		"best_score": high_score,
 		"new_record": new_record,
 	}

@@ -24,9 +24,12 @@ var overdrive_time := 0.0
 var shield_hits := 0
 var _defeated := false
 var _beam_active := false
+var _autoplay_enabled := false
+var _autoplay_time := 0.0
 
 
 func _ready() -> void:
+	_autoplay_enabled = OS.get_cmdline_user_args().has("--autoplay")
 	add_to_group("player")
 	collision_layer = 1
 	collision_mask = 2 | 8 | 16
@@ -49,7 +52,8 @@ func _process(delta: float) -> void:
 	if previous_overdrive > 0.0 and overdrive_time == 0.0:
 		_emit_state_changed()
 
-	var input_vector := Vector2(
+	_autoplay_time += delta
+	var input_vector := _get_autoplay_vector() if _autoplay_enabled else Vector2(
 		Input.get_axis("move_left", "move_right"),
 		Input.get_axis("move_up", "move_down")
 	)
@@ -61,7 +65,7 @@ func _process(delta: float) -> void:
 	position.y = clamp(position.y, GameSession.PLAYER_BOUNDS.position.y, GameSession.PLAYER_BOUNDS.end.y)
 
 	var current_cooldown := fire_cooldown * 0.6 if overdrive_time > 0.0 else fire_cooldown
-	var fire_pressed := Input.is_action_pressed("fire")
+	var fire_pressed := _autoplay_enabled or Input.is_action_pressed("fire")
 	if weapon_level >= 9:
 		if fire_pressed:
 			_emit_beam(current_cooldown)
@@ -93,6 +97,19 @@ func _on_area_entered(area: Area2D) -> void:
 			powerup_kind = area.collect()
 		feedback_requested.emit(powerup_kind, global_position)
 		_apply_powerup(powerup_kind)
+
+
+func _get_autoplay_vector() -> Vector2:
+	var phase := fmod(_autoplay_time, 5.6)
+	if phase < 1.2:
+		return Vector2(0.6, -0.25)
+	if phase < 2.4:
+		return Vector2(0.45, 0.75)
+	if phase < 3.5:
+		return Vector2(-0.35, 0.55)
+	if phase < 4.6:
+		return Vector2(0.7, -0.65)
+	return Vector2(0.25, 0.15)
 
 
 func _build_shots() -> Array:

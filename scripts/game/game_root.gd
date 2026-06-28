@@ -11,6 +11,9 @@ const BOSS_SCENE := preload("res://scenes/entities/boss_stage_1.tscn")
 const BULLET_SCENE := preload("res://scenes/entities/bullet.tscn")
 const POWERUP_SCENE := preload("res://scenes/entities/powerup_pickup.tscn")
 const FEEDBACK_BURST_SCENE := preload("res://scenes/game/feedback_burst.tscn")
+const CHAIN_WINDOW_SEC := 2.4
+const CHAIN_BONUS_STEP := 120
+const CHAIN_BONUS_CAP := 1800
 
 var _hud: CanvasLayer
 var _starfield: Node2D
@@ -54,6 +57,10 @@ var _boss_alarm_bursts_left := 0
 var _boss_alarm_timer := 0.0
 var _ending_victory := false
 var _ending_timer := 0.0
+var _chain_timer := 0.0
+var _chain_count := 0
+var _best_chain := 0
+var _chain_bonus_score := 0
 
 
 func _ready() -> void:
@@ -101,6 +108,7 @@ func _process(delta: float) -> void:
 		return
 	_shot_sfx_timer = max(_shot_sfx_timer - delta, 0.0)
 	_beam_sfx_timer = max(_beam_sfx_timer - delta, 0.0)
+	_tick_chain_timer(delta)
 	if _boss_alarm_bursts_left > 0:
 		_boss_alarm_timer = max(_boss_alarm_timer - delta, 0.0)
 		if _boss_alarm_timer == 0.0:
@@ -140,7 +148,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _sync_hud() -> void:
-	_hud.update_player(_score, _player_hull, _player_max_hull, _player_lives, _player_weapon, _phase_text, _player_status)
+	var status_text := _player_status
+	if _chain_timer > 0.0 and _chain_count >= 3:
+		var chain_text := "CHAIN x%d" % _chain_count
+		status_text = chain_text if status_text.is_empty() else "%s / %s" % [status_text, chain_text]
+	_hud.update_player(_score, _player_hull, _player_max_hull, _player_lives, _player_weapon, _phase_text, status_text)
 	_hud.update_stage(_stage_index + 1, _stages.size(), _stage_progress())
 	_hud.update_boss(is_instance_valid(_boss), _boss_hull, _boss_max_hull)
 
@@ -473,6 +485,8 @@ func _load_stage(index: int) -> void:
 	_boss_alarm_timer = 0.0
 	_ending_victory = false
 	_ending_timer = 0.0
+	_chain_timer = 0.0
+	_chain_count = 0
 	var stage: Dictionary = _stages[index]
 	_stage_name = String(stage["name"])
 	_spawn_schedule = stage["schedule"]
@@ -673,10 +687,13 @@ func _on_player_state_changed(hull: int, max_hull: int, lives: int, weapon_level
 
 
 func _on_enemy_destroyed(score_value: int, burst_position: Vector2) -> void:
-	_score += score_value
+	var chain_bonus := _register_chain_score()
+	_score += score_value + chain_bonus
 	_kills_since_weapon_drop += 1
 	_maybe_spawn_powerup_drop(burst_position)
 	_spawn_burst_effect(burst_position, GameSession.COLOR_FG, 18.0, "burst")
+	if chain_bonus > 0 and (_chain_count == 3 or _chain_count == 6 or _chain_count % 5 == 0):
+		_hud.show_notice(GameSession.loc("chain_notice", [_chain_count, chain_bonus]), 0.9, GameSession.COLOR_ALERT)
 	AudioDirector.play_sfx("enemy_pop")
 
 
@@ -937,6 +954,28 @@ func _finish_run(victory: bool) -> void:
 	var stage_reached := _stage_index + 1
 	if _pending_stage_index >= 0:
 		stage_reached = _pending_stage_index + 1
-	GameSession.save_result(victory, _score, _elapsed, _player_weapon, _player_hull, _stages_cleared, stage_reached, _stages.size())
+	GameSession.save_result(victory, _score, _elapsed, _player_weapon, _player_hull, _stages_cleared, stage_reached, _stages.size(), _best_chain, _chain_bonus_score)
 	AudioDirector.set_music_mode("victory" if victory else "defeat")
 	get_tree().change_scene_to_file("res://scenes/ui/result_screen.tscn")
+
+
+func _tick_chain_timer(delta: float) -> void:
+	if _chain_timer <= 0.0:
+		return
+	_chain_timer = max(_chain_timer - delta, 0.0)
+	if _chain_timer == 0.0:
+		_chain_count = 0
+
+
+func _register_chain_score() -> int:
+	if _chain_timer > 0.0:
+		_chain_count += 1
+	else:
+		_chain_count = 1
+	_chain_timer = CHAIN_WINDOW_SEC
+	_best_chain = max(_best_chain, _chain_count)
+	if _chain_count < 3:
+		return 0
+	var bonus := min((_chain_count - 2) * CHAIN_BONUS_STEP, CHAIN_BONUS_CAP)
+	_chain_bonus_score += bonus
+	return bonus

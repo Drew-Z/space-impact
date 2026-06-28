@@ -14,7 +14,11 @@ var _language_buttons: Array[Button] = []
 
 func _ready() -> void:
 	AudioDirector.set_music_mode("menu")
+	if _is_autoplay_enabled():
+		GameSession.set_language("zh")
 	_rebuild_ui()
+	if _is_autoplay_enabled():
+		call_deferred("_start_game")
 
 
 func _rebuild_ui() -> void:
@@ -41,27 +45,34 @@ func _build_ui() -> void:
 	add_child(center)
 
 	var frame := PanelContainer.new()
-	frame.custom_minimum_size = Vector2(620.0, 420.0)
+	frame.custom_minimum_size = Vector2(660.0, 480.0)
 	frame.add_theme_stylebox_override("panel", _panel_box())
 	center.add_child(frame)
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 36)
-	margin.add_theme_constant_override("margin_top", 28)
-	margin.add_theme_constant_override("margin_right", 36)
-	margin.add_theme_constant_override("margin_bottom", 28)
+	margin.add_theme_constant_override("margin_left", 34)
+	margin.add_theme_constant_override("margin_top", 24)
+	margin.add_theme_constant_override("margin_right", 34)
+	margin.add_theme_constant_override("margin_bottom", 24)
 	frame.add_child(margin)
 
 	var content := VBoxContainer.new()
 	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.alignment = BoxContainer.ALIGNMENT_CENTER
-	content.add_theme_constant_override("separation", 14)
+	content.add_theme_constant_override("separation", 8)
 	margin.add_child(content)
+
+	var badge := Label.new()
+	badge.text = "SHOWCASE ROUTE"
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge.add_theme_font_size_override("font_size", 13)
+	badge.add_theme_color_override("font_color", GameSession.COLOR_ALERT)
+	content.add_child(badge)
 
 	var title := Label.new()
 	title.text = "SPACE WAR"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 34)
+	title.add_theme_font_size_override("font_size", 38)
 	title.add_theme_color_override("font_color", GameSession.COLOR_FG)
 	content.add_child(title)
 
@@ -73,13 +84,14 @@ func _build_ui() -> void:
 	content.add_child(subtitle)
 
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0.0, 8.0)
+	spacer.custom_minimum_size = Vector2(0.0, 4.0)
 	content.add_child(spacer)
 
 	var summary := Label.new()
 	summary.text = GameSession.loc("menu_summary")
 	summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	summary.add_theme_font_size_override("font_size", 18)
+	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	summary.add_theme_font_size_override("font_size", 17)
 	summary.add_theme_color_override("font_color", GameSession.COLOR_FG)
 	content.add_child(summary)
 
@@ -102,11 +114,19 @@ func _build_ui() -> void:
 	else:
 		last_run.text = GameSession.loc("menu_no_continue")
 	last_run.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	last_run.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	last_run.add_theme_font_size_override("font_size", 14)
 	last_run.add_theme_color_override("font_color", GameSession.COLOR_DIM)
 	content.add_child(last_run)
 
 	_start_button = _menu_button(GameSession.loc("menu_start"))
+	_start_button.custom_minimum_size = Vector2(280.0, 48.0)
+	_start_button.add_theme_stylebox_override("normal", _button_box(GameSession.COLOR_ALERT))
+	_start_button.add_theme_stylebox_override("hover", _button_box(GameSession.COLOR_FG))
+	_start_button.add_theme_stylebox_override("focus", _button_box(GameSession.COLOR_FG))
+	_start_button.add_theme_color_override("font_color", GameSession.COLOR_BG)
+	_start_button.add_theme_color_override("font_hover_color", GameSession.COLOR_BG)
+	_start_button.add_theme_color_override("font_focus_color", GameSession.COLOR_BG)
 	_start_button.pressed.connect(_start_game)
 	content.add_child(_start_button)
 
@@ -134,7 +154,8 @@ func _build_ui() -> void:
 	var controls := Label.new()
 	controls.text = GameSession.loc("menu_controls")
 	controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	controls.add_theme_font_size_override("font_size", 14)
+	controls.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	controls.add_theme_font_size_override("font_size", 13)
 	controls.add_theme_color_override("font_color", GameSession.COLOR_DIM)
 	content.add_child(controls)
 
@@ -273,6 +294,10 @@ func _quit_game() -> void:
 	get_tree().quit()
 
 
+func _is_autoplay_enabled() -> bool:
+	return OS.get_cmdline_user_args().has("--autoplay")
+
+
 func _set_main_menu_enabled(enabled: bool) -> void:
 	if _start_button != null:
 		_start_button.disabled = not enabled
@@ -326,7 +351,7 @@ func _menu_button(text: String) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.focus_mode = Control.FOCUS_ALL
-	button.custom_minimum_size = Vector2(240.0, 46.0)
+	button.custom_minimum_size = Vector2(240.0, 42.0)
 	button.add_theme_stylebox_override("normal", _button_box(GameSession.COLOR_GRID))
 	button.add_theme_stylebox_override("hover", _button_box(GameSession.COLOR_DIM))
 	button.add_theme_stylebox_override("focus", _button_box(GameSession.COLOR_DIM))
@@ -351,6 +376,9 @@ func _panel_box() -> StyleBoxFlat:
 	style.expand_margin_top = 2.0
 	style.expand_margin_right = 2.0
 	style.expand_margin_bottom = 2.0
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.34)
+	style.shadow_size = 12
+	style.shadow_offset = Vector2(0.0, 4.0)
 	return style
 
 

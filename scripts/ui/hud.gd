@@ -65,13 +65,13 @@ func _build_ui() -> void:
 	add_child(root)
 
 	var top_bar := ColorRect.new()
-	top_bar.color = Color(0.02, 0.04, 0.02, 0.9)
+	top_bar.color = Color(0.02, 0.04, 0.02, 0.88)
 	top_bar.position = Vector2.ZERO
 	top_bar.size = Vector2(GameSession.VIEW_SIZE.x, 64.0)
 	root.add_child(top_bar)
 
 	var bottom_bar := ColorRect.new()
-	bottom_bar.color = Color(0.02, 0.04, 0.02, 0.82)
+	bottom_bar.color = Color(0.02, 0.04, 0.02, 0.78)
 	bottom_bar.position = Vector2(0.0, GameSession.VIEW_SIZE.y - 38.0)
 	bottom_bar.size = Vector2(GameSession.VIEW_SIZE.x, 38.0)
 	root.add_child(bottom_bar)
@@ -79,7 +79,7 @@ func _build_ui() -> void:
 	_stats_label = Label.new()
 	_stats_label.position = Vector2(22.0, 12.0)
 	_stats_label.size = Vector2(620.0, 22.0)
-	_stats_label.add_theme_font_size_override("font_size", 18)
+	_stats_label.add_theme_font_size_override("font_size", 17)
 	_stats_label.add_theme_color_override("font_color", GameSession.COLOR_FG)
 	root.add_child(_stats_label)
 
@@ -87,7 +87,7 @@ func _build_ui() -> void:
 	_phase_label.position = Vector2(652.0, 12.0)
 	_phase_label.size = Vector2(286.0, 22.0)
 	_phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_phase_label.add_theme_font_size_override("font_size", 18)
+	_phase_label.add_theme_font_size_override("font_size", 17)
 	_phase_label.add_theme_color_override("font_color", GameSession.COLOR_ALERT)
 	root.add_child(_phase_label)
 
@@ -124,7 +124,7 @@ func _build_ui() -> void:
 	_center_label.size = Vector2(640.0, 36.0)
 	_center_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_center_label.visible = false
-	_center_label.add_theme_font_size_override("font_size", 26)
+	_center_label.add_theme_font_size_override("font_size", 28)
 	_center_label.add_theme_color_override("font_color", GameSession.COLOR_ALERT)
 	root.add_child(_center_label)
 
@@ -226,14 +226,17 @@ func _build_ui() -> void:
 
 
 func update_player(score: int, hull: int, max_hull: int, lives: int, weapon_level: int, phase_text: String, status_text: String = "") -> void:
-	_stats_label.text = GameSession.loc("hud_stats", [
+	var status_segment := GameSession.loc("hud_mod", [status_text]) if not status_text.is_empty() else "SHOWCASE RUN"
+	_stats_label.text = "%s  |  %s" % [GameSession.loc("hud_stats", [
 		score,
 		hull,
 		max_hull,
 		GameSession.weapon_label(weapon_level),
-	])
+	]), status_segment]
 	if not status_text.is_empty():
-		_stats_label.text += "   " + GameSession.loc("hud_mod", [status_text])
+		_stats_label.add_theme_color_override("font_color", GameSession.COLOR_ALERT)
+	else:
+		_stats_label.add_theme_color_override("font_color", GameSession.COLOR_FG)
 	_phase_label.text = phase_text
 
 
@@ -318,6 +321,8 @@ func _pause_button(text: String) -> Button:
 	button.add_theme_stylebox_override("focus", _button_box(GameSession.COLOR_DIM))
 	button.add_theme_stylebox_override("pressed", _button_box(GameSession.COLOR_ALERT))
 	button.add_theme_color_override("font_color", GameSession.COLOR_FG)
+	button.add_theme_color_override("font_hover_color", GameSession.COLOR_FG)
+	button.add_theme_color_override("font_focus_color", GameSession.COLOR_FG)
 	button.add_theme_color_override("font_pressed_color", GameSession.COLOR_BG)
 	return button
 
@@ -330,6 +335,9 @@ func _panel_box() -> StyleBoxFlat:
 	style.border_width_top = 2
 	style.border_width_right = 2
 	style.border_width_bottom = 2
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.34)
+	style.shadow_size = 12
+	style.shadow_offset = Vector2(0.0, 4.0)
 	return style
 
 

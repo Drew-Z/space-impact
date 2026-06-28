@@ -23,7 +23,7 @@ func _build_ui() -> void:
 	add_child(center)
 
 	var frame := PanelContainer.new()
-	frame.custom_minimum_size = Vector2(560.0, 360.0)
+	frame.custom_minimum_size = Vector2(600.0, 390.0)
 	frame.add_theme_stylebox_override("panel", _panel_box())
 	center.add_child(frame)
 
@@ -36,13 +36,20 @@ func _build_ui() -> void:
 
 	var content := VBoxContainer.new()
 	content.alignment = BoxContainer.ALIGNMENT_CENTER
-	content.add_theme_constant_override("separation", 12)
+	content.add_theme_constant_override("separation", 10)
 	margin.add_child(content)
+
+	var badge := Label.new()
+	badge.text = "RUN SUMMARY"
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge.add_theme_font_size_override("font_size", 13)
+	badge.add_theme_color_override("font_color", GameSession.COLOR_ALERT)
+	content.add_child(badge)
 
 	var headline := Label.new()
 	headline.text = GameSession.loc("result_clear") if result["victory"] else GameSession.loc("result_failed")
 	headline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	headline.add_theme_font_size_override("font_size", 32)
+	headline.add_theme_font_size_override("font_size", 34)
 	headline.add_theme_color_override("font_color", GameSession.COLOR_ALERT if result["victory"] else GameSession.COLOR_HIT)
 	content.add_child(headline)
 
@@ -75,6 +82,17 @@ func _build_ui() -> void:
 	note.add_theme_color_override("font_color", GameSession.COLOR_FG)
 	content.add_child(note)
 
+	if int(result.get("best_chain", 0)) >= 3 or int(result.get("chain_bonus_score", 0)) > 0:
+		var chain_label := Label.new()
+		chain_label.text = GameSession.loc("result_chain", [
+			int(result.get("best_chain", 0)),
+			int(result.get("chain_bonus_score", 0)),
+		])
+		chain_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		chain_label.add_theme_font_size_override("font_size", 15)
+		chain_label.add_theme_color_override("font_color", GameSession.COLOR_ALERT)
+		content.add_child(chain_label)
+
 	var best_label := Label.new()
 	best_label.text = GameSession.loc("result_best", [
 		int(result["best_score"]),
@@ -88,12 +106,14 @@ func _build_ui() -> void:
 	_restart_button = Button.new()
 	_restart_button.text = GameSession.loc("result_again")
 	_restart_button.focus_mode = Control.FOCUS_ALL
-	_restart_button.custom_minimum_size = Vector2(220.0, 44.0)
-	_restart_button.add_theme_stylebox_override("normal", _button_box(GameSession.COLOR_GRID))
-	_restart_button.add_theme_stylebox_override("hover", _button_box(GameSession.COLOR_DIM))
-	_restart_button.add_theme_stylebox_override("focus", _button_box(GameSession.COLOR_DIM))
+	_restart_button.custom_minimum_size = Vector2(260.0, 48.0)
+	_restart_button.add_theme_stylebox_override("normal", _button_box(GameSession.COLOR_ALERT))
+	_restart_button.add_theme_stylebox_override("hover", _button_box(GameSession.COLOR_FG))
+	_restart_button.add_theme_stylebox_override("focus", _button_box(GameSession.COLOR_FG))
 	_restart_button.add_theme_stylebox_override("pressed", _button_box(GameSession.COLOR_ALERT))
-	_restart_button.add_theme_color_override("font_color", GameSession.COLOR_FG)
+	_restart_button.add_theme_color_override("font_color", GameSession.COLOR_BG)
+	_restart_button.add_theme_color_override("font_hover_color", GameSession.COLOR_BG)
+	_restart_button.add_theme_color_override("font_focus_color", GameSession.COLOR_BG)
 	_restart_button.add_theme_color_override("font_pressed_color", GameSession.COLOR_BG)
 	_restart_button.pressed.connect(_restart)
 	content.add_child(_restart_button)
@@ -101,12 +121,14 @@ func _build_ui() -> void:
 	_menu_button = Button.new()
 	_menu_button.text = GameSession.loc("result_menu")
 	_menu_button.focus_mode = Control.FOCUS_ALL
-	_menu_button.custom_minimum_size = Vector2(220.0, 44.0)
+	_menu_button.custom_minimum_size = Vector2(260.0, 44.0)
 	_menu_button.add_theme_stylebox_override("normal", _button_box(GameSession.COLOR_GRID))
 	_menu_button.add_theme_stylebox_override("hover", _button_box(GameSession.COLOR_DIM))
 	_menu_button.add_theme_stylebox_override("focus", _button_box(GameSession.COLOR_DIM))
 	_menu_button.add_theme_stylebox_override("pressed", _button_box(GameSession.COLOR_ALERT))
 	_menu_button.add_theme_color_override("font_color", GameSession.COLOR_FG)
+	_menu_button.add_theme_color_override("font_hover_color", GameSession.COLOR_FG)
+	_menu_button.add_theme_color_override("font_focus_color", GameSession.COLOR_FG)
 	_menu_button.add_theme_color_override("font_pressed_color", GameSession.COLOR_BG)
 	_menu_button.pressed.connect(_return_to_menu)
 	content.add_child(_menu_button)
@@ -139,6 +161,9 @@ func _panel_box() -> StyleBoxFlat:
 	style.border_width_top = 2
 	style.border_width_right = 2
 	style.border_width_bottom = 2
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.34)
+	style.shadow_size = 12
+	style.shadow_offset = Vector2(0.0, 4.0)
 	return style
 
 
