@@ -25,19 +25,15 @@
 - 程序化音效与主菜单 / 战斗分离的复古音频氛围
 - 从阶段 0 到阶段 4 的完整设计 / 技术 / 测试文档
 
-## 截图
+## 当前展示素材
 
-### 主菜单
+仓库保留了用于生成当前主菜单、战斗和结算页截图的脚本：
 
-![Main Menu](docs/media/menu.png)
+```bash
+godot --path . --script res://tests/capture_screens.gd
+```
 
-### 战斗
-
-![Gameplay](docs/media/gameplay.png)
-
-### 结算
-
-![Result Screen](docs/media/result.png)
+生成结果会写入 `docs/media/`。README 不再直接内嵌历史截图，避免 GitHub 首页展示过时画面；公开发布或更新 GitHub 预览前，先重新运行截图脚本并复核生成图片。
 
 ## 玩家流程
 

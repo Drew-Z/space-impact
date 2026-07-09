@@ -976,6 +976,6 @@ func _register_chain_score() -> int:
 	_best_chain = max(_best_chain, _chain_count)
 	if _chain_count < 3:
 		return 0
-	var bonus := min((_chain_count - 2) * CHAIN_BONUS_STEP, CHAIN_BONUS_CAP)
+	var bonus := mini((_chain_count - 2) * CHAIN_BONUS_STEP, CHAIN_BONUS_CAP)
 	_chain_bonus_score += bonus
 	return bonus
