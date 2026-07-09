@@ -8,3 +8,15 @@ docs/media/*.import
 *.import*.tmp
 *.uid*.tmp
 *.uid
+
+# Local AI/session artifacts
+.agent-work/
+.scratch/
+.claude/settings.local.json
+.codex/sessions/
+.codex/tmp/
+.trellis/.developer
+.trellis/.runtime/
+.trellis/tmp/
+.trellis/workspace/
+.trellis/tasks/archive/
